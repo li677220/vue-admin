@@ -8,21 +8,22 @@ module.exports = {
   lintOnSave: false,
 
   //webpack配置
-  // chainWebpack: (config) => {},
-  // configureWebpack: (config) => {
-    // config.resolve = {
-    //   extensions: ['.js','.json','.vue'],
-    //   alias: {
-    //     '@': path.resolve(__dirname,'./src'),
-    //     'public': path.resolve(__dirname,'./public'),
-    //     'components': path.resolve(__dirname,'./src/components'),
-    //     'common': path.resolve(__dirname,'./src/common'),
-    //     'api': path.resolve(__dirname,'./src/api'),
-    //     'views': path.resolve(__dirname,'./src/views'),
-    //     'data': path.resolve(__dirname,'./src/data'),
-    //   }
-    // }
-  // },
+  chainWebpack: (config) => {},
+  configureWebpack: (config) => {
+    config.resolve = {
+      // 自动添加文件后缀名
+      extensions: ['.js','.json','.vue'],
+      alias: {
+        '@': path.resolve(__dirname,'./src'),
+        'public': path.resolve(__dirname,'./public'),
+        'components': path.resolve(__dirname,'./src/components'),
+        'common': path.resolve(__dirname,'./src/common'),
+        'api': path.resolve(__dirname,'./src/api'),
+        'views': path.resolve(__dirname,'./src/views'),
+        'data': path.resolve(__dirname,'./src/data'),
+      }
+    }
+  },
   // 生产环境是否需要生成map文件
   productionSourceMap: false,
   css: {
@@ -37,7 +38,7 @@ module.exports = {
       }
     },
     // css modules for all css / pre-processor files
-    modules: false
+    requireModuleExtension: true
   },
   // parallet: require('os').cpus.length > 1,
   pwa: {},
