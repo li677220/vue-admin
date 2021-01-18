@@ -57,14 +57,13 @@
               ></el-input>
             </el-col>
             <el-col :span="9">
-              <el-button type="success" @click="getSms">获取验证码</el-button>
+              <el-button type="success" class="getYzm">获取验证码</el-button>
             </el-col>
           </el-row>
           
         </el-form-item>
         <el-form-item>
-          <el-button 
-          type="primary" class="login-btn" @click="submitForm('ruleForm')" :disabled="loginBtnStatus">{{model === "login" ? "登录" : "注册"}}</el-button>
+          <el-button type="primary" class="login-btn" @click="submitForm('ruleForm')">提交</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -72,12 +71,11 @@
 </template>
 
 <script>
-import { GetSms, Login } from "@/api/login"
 import { reactive, ref, toRefs } from "@vue/composition-api"
 import { stripscript, validateEmail, validatePassword, validateCode } from "@/utils/validate"
 export default {
   name: "Login",
-  setup(props, {refs, root}) {
+  setup(props, {refs}) {
 
     let checkUsername = (rule, value, callback) => {
       if(validateEmail(value)){
@@ -104,7 +102,6 @@ export default {
       ruleForm.code = stripscript(value)
       value = ruleForm.code
       if(validateCode(value)){
-        loginBtnStatus.value = false
         callback()
       }else{
         callback(new Error("验证码格式有误，请重新填写"))
@@ -116,8 +113,8 @@ export default {
       { name: "注册", current: false,type: "register" },
     ]);
     const ruleForm = reactive({
-      username: "25388357@qq.com",
-      password: "LJ18582266536",
+      username: "",
+      password: "",
       repassword: "",
       code: "",
     });
@@ -128,9 +125,8 @@ export default {
       code: [{ validator: checkCode, trigger: "blur" }],
     });
     const model = ref("login");
-    const loginBtnStatus = ref(true)
+
     //声明函数
-    // 切换登陆注册
     const switchStatus = (data) => {
       menuTab.forEach((item) => {
         item.current = false;
@@ -138,46 +134,20 @@ export default {
       data.current = true;
       model.value = data.type
     };
-    // 登录提交表单
     const submitForm = (formName) => {
-      // refs[formName].validate((valid) => {
-      //   if (valid) {
-      //     alert("submit!");
-      //   } else {
-      //     console.log("error submit!!");
-      //     return false;
-      //   }
-      // });
-      Login({
-        username: "25388357@qq.com",
-        password: "LJ18582266536",
-        code: ruleForm.code
-      }).then((response) => {
-        console.log(response);
-      })
-    };
-    // 登录获取验证码
-    const getSms = () => {
-      if(ruleForm.username == "" || ruleForm.password == "" ){
-        root.$message({
-          showClose: true,
-          dangerouslyUseHTMLString: true,
-          message: '<b>邮箱</b> 或 <b>密码</b>不能为空',
-          type: 'error'
-        });
-        return false
-      }
-
-      GetSms({username: ruleForm.username}).then(response => {
-        console.log(response);
-      }).catch(error => {
-        console.log(error);
-      })
+      refs[formName].validate((valid) => {
+        if (valid) {
+          alert("submit!");
+        } else {
+          console.log("error submit!!");
+          return false;
+        }
+      });
     };
     return{
       menuTab,ruleForm,rules,
-      model,loginBtnStatus,
-      switchStatus,submitForm,getSms
+      model,
+      switchStatus,submitForm,checkUsername,checkPwd,checkRePwd,checkCode
     }
   },
 };

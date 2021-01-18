@@ -2,13 +2,15 @@
   <div id="login">
     <div class="login-wrap">
       <ul class="menu-tab">
+        <!-- <li :class='{current: isActive}' @click="switchStatus(0)">登录</li>
+        <li :class='{current: !isActive}' @click="switchStatus">注册</li><br> -->
         <li
           :class="{ current: item.current }"
           v-for="(item, i) in menuTab"
           :key="i"
           @click="switchStatus(item)"
         >
-          {{ item.name }}
+          {{ item.name }}{{ item.id }}
         </li>
       </ul>
       <el-form
@@ -57,14 +59,16 @@
               ></el-input>
             </el-col>
             <el-col :span="9">
-              <el-button type="success" @click="getSms">获取验证码</el-button>
+              <el-button type="success" class="getYzm">获取验证码</el-button>
             </el-col>
           </el-row>
           
         </el-form-item>
         <el-form-item>
-          <el-button 
-          type="primary" class="login-btn" @click="submitForm('ruleForm')" :disabled="loginBtnStatus">{{model === "login" ? "登录" : "注册"}}</el-button>
+          <el-button type="primary" class="login-btn" @click="submitForm('ruleForm')"
+            >提交</el-button
+          >
+          <!-- <el-button @click="resetForm('ruleForm')">重置</el-button> -->
         </el-form-item>
       </el-form>
     </div>
@@ -72,113 +76,112 @@
 </template>
 
 <script>
-import { GetSms, Login } from "@/api/login"
-import { reactive, ref, toRefs } from "@vue/composition-api"
 import { stripscript, validateEmail, validatePassword, validateCode } from "@/utils/validate"
 export default {
   name: "Login",
-  setup(props, {refs, root}) {
-
-    let checkUsername = (rule, value, callback) => {
+  data() {
+    //验证用户名
+    var checkUsername = (rule, value, callback) => {
+      // this.ruleForm.username = stripscript(value)
+      // value = this.ruleForm.username // 邮箱不能过滤，某些邮箱中有字符
       if(validateEmail(value)){
         callback()
       }else{
         callback(new Error("用户名格式有误，请重新填写"));
       }
+      // if (value === "") {
+      //   callback(new Error("请输入用户名"));
+      // } else if(!reg.test(value)) {
+      //   callback(new Error("请输入正确格式用户名"));
+      // }else{
+      //   callback();
+      // }
     };
-    let checkPwd = (rule, value, callback) => {
+    //验证密码
+    var checkPwd = (rule, value, callback) => {
+      // this.ruleForm.password = stripscript(value)
+      // value = this.ruleForm.password //密码尽量不过滤否则导致用户自己都会不知道密码
+      // let reg = /^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z]{6,20}$/
+      // if (value === "") {
+      //   callback(new Error("请输入密码"));
+      // }else if(!reg.test(value)){
+      //   callback(new Error("密码为6-20位"));
+      // }else {
+      //   callback();
+      // }
       if(validatePassword(value)){
         callback()
       }else{
         callback(new Error("密码格式有误，请重新填写"))
       }
     };
-    let checkRePwd = (rule, value, callback) => {
-      if(value === ruleForm.password){
+    var checkRePwd = (rule, value, callback) => {
+      if(value === this.ruleForm.password){
         callback()
       }else{
         callback(new Error("两次密码不一致，请重新填写"))
       }
     };
-    let checkCode = (rule, value, callback) => {
-      ruleForm.code = stripscript(value)
-      value = ruleForm.code
+    var checkCode = (rule, value, callback) => {
+      this.ruleForm.code = stripscript(value)
+      value = this.ruleForm.code
       if(validateCode(value)){
-        loginBtnStatus.value = false
         callback()
       }else{
         callback(new Error("验证码格式有误，请重新填写"))
-      }   
+      }
+      
     };
-
-    const menuTab = reactive([
-      { name: "登录", current: true, type: "login" },
-      { name: "注册", current: false,type: "register" },
-    ]);
-    const ruleForm = reactive({
-      username: "25388357@qq.com",
-      password: "LJ18582266536",
-      repassword: "",
-      code: "",
-    });
-    const rules = reactive({
-      username: [{ validator: checkUsername, trigger: "blur" }],
-      password: [{ validator: checkPwd, trigger: "blur" }],
-      repassword: [{ validator: checkRePwd, trigger: "blur" }],
-      code: [{ validator: checkCode, trigger: "blur" }],
-    });
-    const model = ref("login");
-    const loginBtnStatus = ref(true)
-    //声明函数
-    // 切换登陆注册
-    const switchStatus = (data) => {
-      menuTab.forEach((item) => {
+    return {
+      menuTab: [
+        { name: "登录", current: true, type: "login" },
+        { name: "注册", current: false,type: "register" },
+      ],
+      //表单数据
+      ruleForm: {
+        username: "",
+        password: "",
+        repassword: "",
+        code: "",
+      },
+      rules: {
+        username: [{ validator: checkUsername, trigger: "blur" }],
+        password: [{ validator: checkPwd, trigger: "blur" }],
+        repassword: [{ validator: checkRePwd, trigger: "blur" }],
+        code: [{ validator: checkCode, trigger: "blur" }],
+      },
+      model : "login"
+    };
+  },
+  components: {},
+  created() {},
+  mounted() {},
+  methods: {
+    switchStatus(data) {
+      this.menuTab.forEach((item) => {
         item.current = false;
       });
       data.current = true;
-      model.value = data.type
-    };
-    // 登录提交表单
-    const submitForm = (formName) => {
-      // refs[formName].validate((valid) => {
-      //   if (valid) {
-      //     alert("submit!");
-      //   } else {
-      //     console.log("error submit!!");
-      //     return false;
-      //   }
-      // });
-      Login({
-        username: "25388357@qq.com",
-        password: "LJ18582266536",
-        code: ruleForm.code
-      }).then((response) => {
-        console.log(response);
-      })
-    };
-    // 登录获取验证码
-    const getSms = () => {
-      if(ruleForm.username == "" || ruleForm.password == "" ){
-        root.$message({
-          showClose: true,
-          dangerouslyUseHTMLString: true,
-          message: '<b>邮箱</b> 或 <b>密码</b>不能为空',
-          type: 'error'
-        });
-        return false
-      }
-
-      GetSms({username: ruleForm.username}).then(response => {
-        console.log(response);
-      }).catch(error => {
-        console.log(error);
-      })
-    };
-    return{
-      menuTab,ruleForm,rules,
-      model,loginBtnStatus,
-      switchStatus,submitForm,getSms
-    }
+      // if(data.type === "register"){
+      //   this.model = "register"
+      // }else{
+      //   this.model = "login"
+      // }  //我是笨比
+      this.model = data.type
+    },
+    submitForm(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          alert("submit!");
+        } else {
+          console.log("error submit!!");
+          return false;
+        }
+      });
+    },
+    // resetForm(formName) {
+    //   this.$refs[formName].resetFields();
+    // },
   },
 };
 </script>

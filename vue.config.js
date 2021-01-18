@@ -50,7 +50,17 @@ module.exports = {
     https: false, //编译失败时刷新界面
     hot: true, //开启热加载
     hotOnly: false, //
-    proxy: null, //代理
+    //代理
+    proxy: {
+      '/devApi': {
+          target: 'http://www.web-jshtml.cn/productapi', // 代理目标主机
+          changeOrigin: true, // 启用跨域
+          // ws: true,
+          pathRewrite: { // 路径重写等
+              '^/devApi': ''
+          }
+      }
+  },
     overlay: { //全屏模式下是否显示脚本错误
       warninggs: true,
       errors: true
