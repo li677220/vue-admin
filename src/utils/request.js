@@ -3,7 +3,7 @@ import { Message } from "element-ui"
 // const BASEURL = process.env.NODE_ENV === 'production' ? '' : '/devApi';
 const service = axios.create({
   baseURL: "/devApi",
-  timeOut: 1000
+  timeOut: 5000
 })
 
 // 添加请求拦截器
@@ -30,7 +30,7 @@ service.interceptors.response.use(function (response) {
     Message.success({
       message: data.message
     })
-    return response
+    return Promise.resolve(response)
   }
 }, function (error) {
   // 对响应错误做点什么

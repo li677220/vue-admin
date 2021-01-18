@@ -15,7 +15,7 @@
         :model="ruleForm"
         status-icon
         :rules="rules"
-        ref="ruleForm"
+        ref="LoginForm"
         size="midium"
         class="login-form"
       >
@@ -45,7 +45,7 @@
         </el-form-item>
         <el-form-item prop="code">
           <label for="code">验证码</label><br>
-          <el-row :gutter="16">
+          <el-row :gutter="10">
             <el-col :span="15">
               <el-input
                 v-model="ruleForm.code"
@@ -57,14 +57,14 @@
               ></el-input>
             </el-col>
             <el-col :span="9">
-              <el-button type="success" @click="getSms">获取验证码</el-button>
+                <el-button type="success" @click="getSms" :disabled="sms.status" :loading="sms.loading" class="block">{{ sms.content }}</el-button>
             </el-col>
           </el-row>
           
         </el-form-item>
         <el-form-item>
           <el-button 
-          type="primary" class="login-btn" @click="submitForm('ruleForm')" :disabled="loginBtnStatus">{{model === "login" ? "登录" : "注册"}}</el-button>
+          type="primary" class="login-btn" @click="submitForm(model)" :disabled="loginBtnStatus">{{model === "login" ? "登录" : "注册"}}</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -72,8 +72,8 @@
 </template>
 
 <script>
-import { GetSms, Login } from "@/api/login"
-import { reactive, ref, toRefs } from "@vue/composition-api"
+import { GetSms, Login, Register } from "@/api/login"
+import { onUnmounted, reactive, ref, toRefs } from "@vue/composition-api"
 import { stripscript, validateEmail, validatePassword, validateCode } from "@/utils/validate"
 export default {
   name: "Login",
@@ -81,6 +81,7 @@ export default {
 
     let checkUsername = (rule, value, callback) => {
       if(validateEmail(value)){
+        smsBtnStatus.value = false
         callback()
       }else{
         callback(new Error("用户名格式有误，请重新填写"));
@@ -96,8 +97,10 @@ export default {
     let checkRePwd = (rule, value, callback) => {
       if(value === ruleForm.password){
         callback()
+        return true
       }else{
         callback(new Error("两次密码不一致，请重新填写"))
+        return false
       }
     };
     let checkCode = (rule, value, callback) => {
@@ -117,7 +120,7 @@ export default {
     ]);
     const ruleForm = reactive({
       username: "25388357@qq.com",
-      password: "LJ18582266536",
+      password: "",
       repassword: "",
       code: "",
     });
@@ -127,6 +130,12 @@ export default {
       repassword: [{ validator: checkRePwd, trigger: "blur" }],
       code: [{ validator: checkCode, trigger: "blur" }],
     });
+    const sms = reactive({
+      content: "获取验证码",
+      status: false,
+      loading: false
+    })
+    let timer = reactive({}) 
     const model = ref("login");
     const loginBtnStatus = ref(true)
     //声明函数
@@ -137,48 +146,92 @@ export default {
       });
       data.current = true;
       model.value = data.type
+      // for(let i in ruleForm){
+      //   ruleForm[i] = ""
+      // }
+      refs["LoginForm"].resetFields()
     };
-    // 登录提交表单
-    const submitForm = (formName) => {
-      // refs[formName].validate((valid) => {
-      //   if (valid) {
-      //     alert("submit!");
-      //   } else {
-      //     console.log("error submit!!");
-      //     return false;
-      //   }
-      // });
-      Login({
-        username: "25388357@qq.com",
-        password: "LJ18582266536",
+    // 登录、注册提交表单
+    const submitForm = (model) => {
+      if( !validateEmail() || !validatePassword() || !validateCode() ){
+        return false
+      }
+      let data = {
+        username: ruleForm.username,
+        password: ruleForm.password,
         code: ruleForm.code
-      }).then((response) => {
-        console.log(response);
-      })
+      }
+      if(model == "login"){
+        Login(data).then((response) => {
+          console.log(response);
+        })
+      }else if(model == "register"){
+        if(!checkRePwd()){
+          root.$message({
+            message: "两次输入的密码不一致",
+            type: "warning"
+          })
+          return false
+        }
+        Register(data).then(response => {
+          console.log(response);
+        }).catch(error => {
+          console.log(error);
+        })
+      }
+      
     };
-    // 登录获取验证码
+    // 获取验证码
     const getSms = () => {
-      if(ruleForm.username == "" || ruleForm.password == "" ){
+      if(ruleForm.username == "" || !validateEmail(ruleForm.username)){
         root.$message({
           showClose: true,
           dangerouslyUseHTMLString: true,
-          message: '<b>邮箱</b> 或 <b>密码</b>不能为空',
+          message: '<b>邮箱</b> 格式错误',
           type: 'error'
         });
         return false
       }
-
-      GetSms({username: ruleForm.username}).then(response => {
+      sms.content = "发送中"
+      sms.status = true
+      sms.loading = true
+      let data = {
+        username: ruleForm.username,
+        module: model.value
+      }
+      GetSms(data).then(response => {
+        sms.loading = false
+        sms.content = "发送成功"
+        loginBtnStatus.value = false
+        // 调用倒计时
+        countDown(5)
         console.log(response);
       }).catch(error => {
         console.log(error);
       })
+
+    };
+    // 获取验证码成功后，开启倒计时
+    const countDown = (number) => {
+      let time = number
+      timer = setInterval(() => {
+        if(time > 0 ){
+          sms.content = `${time--}秒后可用`
+        }else{
+          clearInterval(timer)
+          sms.content = "获取验证码"
+          sms.status = false
+        }
+      },1000)
     };
     return{
-      menuTab,ruleForm,rules,
+      menuTab,ruleForm,rules,sms,
       model,loginBtnStatus,
       switchStatus,submitForm,getSms
     }
+    onUnmounted(() => {
+      clearInterval(timer)
+    })
   },
 };
 </script>
@@ -227,5 +280,7 @@ export default {
     width: 100%;
   }
 }
-
+.block{
+  width: 100%;
+}
 </style>

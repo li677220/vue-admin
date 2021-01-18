@@ -12,7 +12,7 @@ export function Login(data){
 /**
  * 注册
  */
-export function register(data){
+export function Register(data){
   return service.request({
     method: "POST",
     url: "/register/",
@@ -23,6 +23,7 @@ export function register(data){
  * 获取验证码
  */
 export function GetSms(data){
+  console.log(data);
   return service.request({
     method: "POST",
     url: "/getSms/",
