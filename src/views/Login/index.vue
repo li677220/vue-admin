@@ -64,7 +64,7 @@
         </el-form-item>
         <el-form-item>
           <el-button 
-          type="primary" class="login-btn" @click="submitForm(model)" :disabled="loginBtnStatus">{{model === "login" ? "登录" : "注册"}}</el-button>
+          type="primary" class="login-btn" @click="submitForm(model)" :disabled="loginBtn.status" :loading="loginBtn.loading">{{model === "login" ? "登录" : "注册并登录"}}</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -72,6 +72,7 @@
 </template>
 
 <script>
+import sha1 from "sha1"
 import { GetSms, Login, Register } from "@/api/login"
 import { onUnmounted, reactive, ref, toRefs } from "@vue/composition-api"
 import { stripscript, validateEmail, validatePassword, validateCode } from "@/utils/validate"
@@ -80,8 +81,8 @@ export default {
   setup(props, {refs, root}) {
 
     let checkUsername = (rule, value, callback) => {
+      sms.status = false
       if(validateEmail(value)){
-        smsBtnStatus.value = false
         callback()
       }else{
         callback(new Error("用户名格式有误，请重新填写"));
@@ -95,19 +96,24 @@ export default {
       }
     };
     let checkRePwd = (rule, value, callback) => {
+      sms.status = false
       if(value === ruleForm.password){
         callback()
-        return true
       }else{
+        root.$message({
+          message: "两次密码不一致，请重新填写",
+          type: "error"
+        })
         callback(new Error("两次密码不一致，请重新填写"))
         return false
       }
+      return (value === ruleForm.password)
     };
     let checkCode = (rule, value, callback) => {
       ruleForm.code = stripscript(value)
       value = ruleForm.code
       if(validateCode(value)){
-        loginBtnStatus.value = false
+        loginBtn.status = false
         callback()
       }else{
         callback(new Error("验证码格式有误，请重新填写"))
@@ -119,8 +125,8 @@ export default {
       { name: "注册", current: false,type: "register" },
     ]);
     const ruleForm = reactive({
-      username: "25388357@qq.com",
-      password: "",
+      username: "li888@163.com",
+      password: "LJ18582266536",
       repassword: "",
       code: "",
     });
@@ -133,11 +139,16 @@ export default {
     const sms = reactive({
       content: "获取验证码",
       status: false,
-      loading: false
+      loading: false,
+      code: ""
     })
     let timer = reactive({}) 
     const model = ref("login");
-    const loginBtnStatus = ref(true)
+    const loginBtn = reactive({
+      status: true,
+      loading: false
+    })
+    // const loginBtnStatus = ref(true)
     //声明函数
     // 切换登陆注册
     const switchStatus = (data) => {
@@ -146,40 +157,62 @@ export default {
       });
       data.current = true;
       model.value = data.type
-      // for(let i in ruleForm){
-      //   ruleForm[i] = ""
-      // }
       refs["LoginForm"].resetFields()
     };
     // 登录、注册提交表单
     const submitForm = (model) => {
-      if( !validateEmail() || !validatePassword() || !validateCode() ){
-        return false
-      }
       let data = {
         username: ruleForm.username,
-        password: ruleForm.password,
-        code: ruleForm.code
+        password: sha1(ruleForm.password),
+        code: ruleForm.code,
       }
+      loginBtn.loading = true
       if(model == "login"){
-        Login(data).then((response) => {
-          console.log(response);
-        })
-      }else if(model == "register"){
-        if(!checkRePwd()){
-          root.$message({
-            message: "两次输入的密码不一致",
-            type: "warning"
+        // Login(data).then((response) => {
+        //   loginBtn.loading = false
+        //   root.$router.push({    //参数不可见  
+        //     name: "Console"
+        //   })
+        // })
+        root.$store.dispatch("login/login",data).then((res) => {
+          loginBtn.loading = false
+          root.$router.push({
+            name: "Console"
           })
-          return false
-        }
+        })
+
+
+
+          // root.$router.push({  //参数可见，刷新后不会消失
+          //   path: "/console",
+          //   query:{
+          //     id: 123,
+          //     pwd: 4456
+          //   }
+          // })
+          // root.$router.push({    //参数可见   刷新后不会消失
+          //   name: "Console",
+          //   query:{
+          //     id: 123,
+          //     pwd: 4456
+          //   }
+          // })
+          // root.$router.push({    //参数不可见  参数会被忽略
+          //   path: "/console",
+          //   params :{
+          //     id: 123,
+          //     pwd: 4456
+          //   }
+          // })
+      }else if(model == "register"){
         Register(data).then(response => {
+          loginBtn.loading = false
           console.log(response);
         }).catch(error => {
+          loginBtn.loading = false
           console.log(error);
         })
       }
-      
     };
     // 获取验证码
     const getSms = () => {
@@ -202,11 +235,24 @@ export default {
       GetSms(data).then(response => {
         sms.loading = false
         sms.content = "发送成功"
-        loginBtnStatus.value = false
+        loginBtn.status = false
         // 调用倒计时
-        countDown(5)
-        console.log(response);
+        countDown(60)
+        // 点击复制验证码   未实现
+        // root.$message({
+        //   dangerouslyUseHTMLString: true,
+        //   message: response.data.message+ `        <el-button 
+        //     class="el-icon-copy-document" 
+        //     style="cursor: pointer;color: #000"
+        //     v-on:click="console.log(123)"
+        //     ></el-button>`,
+        //   type: "success"
+        // })
       }).catch(error => {
+        sms.loading = false
+        sms.content = "发送验证码"
+        sms.status = false
+        loginBtn.status = false
         console.log(error);
       })
 
@@ -224,10 +270,13 @@ export default {
         }
       },1000)
     };
+    const copySms = () => {
+      console.log(123);
+    };
     return{
       menuTab,ruleForm,rules,sms,
-      model,loginBtnStatus,
-      switchStatus,submitForm,getSms
+      model,loginBtn,
+      switchStatus,submitForm,getSms,copySms
     }
     onUnmounted(() => {
       clearInterval(timer)
@@ -240,7 +289,7 @@ export default {
 #login {
   height: 100vh;
   width: 100vw;
-  background-color: #bfa;
+  background-color: $mainColor;
   .login-wrap {
     width: 330px;
     margin: 0 auto;

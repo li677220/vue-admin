@@ -5,7 +5,7 @@ import service from "@/utils/request"
 export function Login(data){
   return service.request({
     method: "POST",
-    url: "/login",
+    url: "/login/",
     data
   })
 }
@@ -23,7 +23,6 @@ export function Register(data){
  * 获取验证码
  */
 export function GetSms(data){
-  console.log(data);
   return service.request({
     method: "POST",
     url: "/getSms/",

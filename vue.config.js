@@ -8,12 +8,23 @@ module.exports = {
   lintOnSave: false,
 
   //webpack配置
-  chainWebpack: (config) => {},
+  chainWebpack: (config) => {
+    const svgRule = config.module.rule("svg");
+    svgRule.uses.clear();
+    svgRule
+    .use("svg-sprite-loader")
+    .loader("svg-sprite-loader")
+    .options({
+      symbolId: "icon-[name]",
+      include: ["./src/icons"]
+    });
+  },
   configureWebpack: (config) => {
     config.resolve = {
       // 自动添加文件后缀名
       extensions: ['.js','.json','.vue'],
       alias: {
+        "vue": 'vue/dist/vue.js',//修改vue指向,切换为compiler模式
         '@': path.resolve(__dirname,'./src'),
         'public': path.resolve(__dirname,'./public'),
         'components': path.resolve(__dirname,'./src/components'),
@@ -53,7 +64,7 @@ module.exports = {
     //代理
     proxy: {
       '/devApi': {
-          target: 'http://www.web-jshtml.cn/productapi', // 代理目标主机
+          target: 'http://www.web-jshtml.cn/productapi/token', // 代理目标主机
           changeOrigin: true, // 启用跨域
           // ws: true,
           pathRewrite: { // 路径重写等

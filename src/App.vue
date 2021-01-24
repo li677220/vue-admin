@@ -5,5 +5,7 @@
 </template>
 
 <style lang="scss">
-#app {}
+#app {
+  user-select: none;
+}
 </style>
