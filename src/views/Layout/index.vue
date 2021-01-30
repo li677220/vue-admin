@@ -76,15 +76,15 @@ export default {
 .open{
   .el-aside{
     transition: all .5s;
-    width: 250px;
+    width: $sideWidth;
   }
   .el-header{
     transition: all .5s;
-    left: 250px;
+    left: $sideWidth;
   }
   .el-main{
     transition: all .5s;
-    left: 250px;
+    left: $sideWidth;
   }
 }
 </style>

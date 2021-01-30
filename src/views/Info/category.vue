@@ -1,7 +1,7 @@
 <template>
   <div id="category">
     <div class="first_btn_wrap">
-      <el-button type="danger" @click="add">添加一级分类</el-button>
+    <el-button type="danger" @click="add({type: 'category_first_add'})">添加一级分类</el-button>
     </div>
     <el-row :gutter="30">
       <el-col :span="10">
@@ -12,7 +12,7 @@
               <svg-icon iconClass="plus" className="plus"></svg-icon>
               <span>{{item.category_name}}{{item.id}}</span>
               <div class="btn-group">
-                <el-button size="mini" type="danger" round @click="editCategory">编辑</el-button>
+                <el-button size="mini" type="danger" round @click="editCategory({data: item, type: 'category_first_edit'})">编辑</el-button>
                 <el-button size="mini" type="success" round>添加子级</el-button>
                 <el-button size="mini" type="" round @click="deleteCategory(item.id)">删除</el-button>
               </div>
@@ -54,13 +54,15 @@
 </template>
 
 <script>
-import { AddFirstCategory, GetCategory, DeleteCategory } from "@/api/news";
-import { reactive, onMounted } from "@vue/composition-api";
+import { AddFirstCategory, GetCategory, DeleteCategory, EditCategory } from "@/api/news";
+import { reactive, onMounted, watch } from "@vue/composition-api";
+import { common } from "@/api/common.js"
 import { global } from "@/utils/globalv3.js"
 import SvgIcon from "../../icons/svg-icon.vue";
 export default {
   name: "Category",
   setup(props, { refs, root }) {
+    const { categoryInfo, getInfoCategory } = common()
     const { removeTips } = global();
     const cateForm = reactive({
       first: "",
@@ -74,46 +76,94 @@ export default {
     });
     const confirmBtnStatus = reactive({
       loading: false,
-      disable: true
+      disable: true,
+      type: ""
     })
     let category = reactive({
-      item: []
+      item: [],
+      current: {}
     });
+    // const changeInputStatus = (params) => {
+    //   console.log(params);
+    //   inputStatus.first = params.first || inputStatus.first,
+    //   inputStatus.firstInputDis = params.firstInputDis || inputStatus.firstInputDis,
+    //   inputStatus.second = params.second || inputStatus.second,
+    //   inputStatus.secondInputDis = params.secondInputDis || inputStatus.secondInputDis,
+    //   confirmBtnStatus.loading = params.confirmBtnLoading || confirmBtnStatus.loading,
+    //   confirmBtnStatus.disable = params.confirmBtnDisable || confirmBtnStatus.disable
+    // }
     const addFirstCategory = () => {
       if (cateForm.first == "") {
         root.$message({
-          message: "添加内容不能为空",
+          message: "内容不能为空",
           type: "error",
         });
         return false;
       }
+      // 添加分类
+      if(confirmBtnStatus.type == "category_first_add"){
+        confirmTypeAdd()
+      }else if(confirmBtnStatus.type == "category_first_edit"){
+      //修改分类
+        confirmTypeEdit()
+      }
+      
+    };
+    const confirmTypeAdd = () => {
       confirmBtnStatus.loading = true
-      let requestData = {
-        categoryName: cateForm.first,
-      };
-      AddFirstCategory(requestData).then((response) => {
+        let requestData = {
+          categoryName: cateForm.first,
+        };
+        AddFirstCategory(requestData).then((response) => {
         // 添加成功之后  更新左侧分类
         // 1、直接更新 category.item
         category.item.push(response.data.data)
         // 2、请求接口获取最新分类 内存资源消耗更大
         // getCategory()
       }).catch(err => {});
+      // changeInputStatus({confirmBtnLoading: false})
       confirmBtnStatus.loading = false
       // refs["cateForm"].resetFields()  //bug  表单清空出错
       cateForm.first = ""
-    };
-    const getCategory = () => {
-      GetCategory().then(response => {
-        let resData = response.data.data.data
-        category.item = resData
-      }).catch(err => {
-        console.log(err);
-      })
     }
-    const add = () => {
+    const confirmTypeEdit = () => {
+      // 名称应该为输入框里的名称（category.current.category_name是修改之前的名称）
+      let requestData = {
+        id: category.current.id,
+        categoryName: cateForm.first
+      }
+      // 修改服务器存储的数据
+      EditCategory(requestData).then(response => {
+        // 服务器上的数据修改成功之后 再修改本地数据
+        category.item.forEach(item => {
+          if(item.id == requestData.id){
+            item.category_name = response.data.data.data.categoryName
+          }
+          // console.log(category);
+        })
+        cateForm.first = ""
+        category.current = {}
+      }).catch(err => {console.log(err);})
+
+    }
+    // const getCategory = () => {
+    //   GetCategory().then(response => {
+    //     let resData = response.data.data.data
+    //     category.item = resData
+    //   }).catch(err => {
+    //     console.log(err);
+    //   })
+    // }
+    const add = (params) => {
+      // changeInputStatus({
+      //   firstInputDis: false,
+      //   second: false,
+      //   confirmBtnDisable: false
+      // })
       inputStatus.second = false;
       inputStatus.firstInputDis = false
       confirmBtnStatus.disable = false
+      confirmBtnStatus.type = params.type
     };
     const deleteCategory = (id)=> {
       removeTips({
@@ -136,15 +186,28 @@ export default {
     const afterDelete = (id) => {
       category.item = category.item.filter(item => item.id !== id)
     }
-    const editCategory = () => {
-      console.log(123);
+    const editCategory = (params) => {
+      cateForm.first = params.data.category_name
+      inputStatus.firstInputDis = false
+      inputStatus.second = false
+      confirmBtnStatus.disable = false
+      confirmBtnStatus.type = "category_first_edit"
+      // console.log(item);
+      confirmBtnStatus.type = params.type
+      
+      // 
+      category.current = params.data
+      // 修改category数据
     }
     onMounted(() => {
-      getCategory()
+      getInfoCategory()
+    })
+    watch(() => categoryInfo.item,(value) => {
+      category.item = value
     })
     return {
       cateForm, inputStatus, category, confirmBtnStatus,
-      addFirstCategory, add, getCategory, deleteCategory,editCategory
+      addFirstCategory, add, deleteCategory,editCategory
     };
   },
   

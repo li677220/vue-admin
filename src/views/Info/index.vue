@@ -4,12 +4,12 @@
       <el-col :span="4">
         <label for="">
           <span class="label-value">类型:</span>
-          <el-select v-model="typeValue" placeholder="请选择" style="max-width: 120px">
+          <el-select v-model="searchOptions.typeValue" placeholder="请选择" style="max-width: 120px">
             <el-option
-              v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
+              v-for="item in options.item"
+              :key="item.id"
+              :label="item.category_name"
+              :value="item.id"
             ></el-option>
           </el-select>
         </label>
@@ -18,12 +18,13 @@
         <label for="">
           <span class="label-value">日期:</span>
             <el-date-picker
-              v-model="dateValue"
+              v-model="searchOptions.dateValue"
               type="daterange"
               range-separator="至"
               start-placeholder="开始日期"
               end-placeholder="结束日期"
-              style="max-width: 270px"
+              value-format="yyyy-M-d HH:mm:ss"
+              style="max-width: 290px"
             >
             </el-date-picker>
         </label>
@@ -31,7 +32,7 @@
       <el-col :span="7">
         <label for="">
           <span class="label-value">关键字:</span>
-          <el-select v-model="keyValue" placeholder="请选择" style="max-width: 120px">
+          <el-select v-model="searchOptions.keyValue" placeholder="请选择" style="max-width: 120px">
             <el-option
               v-for="item in keyOptions"
               :key="item.value"
@@ -39,26 +40,27 @@
               :value="item.value"
             ></el-option>
           </el-select>
-          <el-input v-model="inputValue" placeholder="请输入"
+          <el-input v-model="searchOptions.inputValue" placeholder="请输入"
           class="full-right" style="max-width: 140px"></el-input>
         </label>
       </el-col>
       <el-col :span="6">
-        <el-button type="primary" class="full-left" icon="el-icon-search">搜索</el-button>
+        <el-button type="primary" class="full-left" icon="el-icon-search" @click="search">搜索</el-button>
         <el-button type="primary" class="full-right" icon="el-icon-plus" @click="addNews">新增</el-button>
       </el-col>
     </el-row>
     <!-- 表格 -->
-    <el-table :data="tableData" border style="width: 100%">
+    <el-table :data="tableData.item" border style="width: 100%"
+    v-loading="tableData.loading" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55"></el-table-column>
-      <el-table-column prop="date" label="标题" ></el-table-column>
-      <el-table-column prop="name" label="类别" width="130"></el-table-column>
-      <el-table-column prop="address" label="日期" width="240"></el-table-column>
+      <el-table-column prop="title" label="标题" ></el-table-column>
+      <el-table-column prop="categoryName" label="类型" width="130"></el-table-column>
+      <el-table-column prop="createDate" label="日期" width="240" :formatter="formatTime"></el-table-column>
       <el-table-column prop="manager" label="管理人" width="115"></el-table-column>
       <el-table-column prop="operation" label="操作" width="150">
-        <template :slot-scope="scope">
-          <el-button type="danger" size="mini" @click="removeNews">删除</el-button>
-          <el-button type="success" size="mini" @click="editNews">编辑</el-button>
+        <template v-slot="scope">
+          <el-button type="danger" size="mini" @click="deleteInfo(scope.row.id)">删除</el-button>
+          <el-button type="success" size="mini" @click="editNews(scope.row)">编辑</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -71,110 +73,180 @@
           background
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
-          :page-sizes="[100, 200, 300, 400]"
+          :page-sizes="[10, 20, 50, 100]"
           layout="total, sizes, prev, pager, next, jumper"
-          :total="1000">
+          :total="tableData.total">
         </el-pagination>
       </el-col>
     </el-row>
     <!-- 新增弹窗 -->
-    <dialogInfo ref="dialog"></dialogInfo>
+    <dialogInfo ref="addDialog" :category="options.item" title="新增"></dialogInfo>
+    <dialogInfo ref="editDialog" :category="options.item" title="编辑"></dialogInfo>
   </div>
 </template>
 
 <script>
+import { GetCategory, GetList, DeleteInfo } from "@/api/news";
+import { formatDate } from "@/utils/common.js"
+import { common } from "@/api/common.js"
 import { global } from "@/utils/globalv3.js"
-import { reactive, ref } from "@vue/composition-api";
-import dialogInfo from "./dialog/index"
+import { reactive, ref, onMounted, watch } from "@vue/composition-api";
+// import dialogInfo from "./dialog/index"
 export default {
   name: "InfoIndex",
-  components: { dialogInfo },
+  components: { dialogInfo:resolve => {
+    require(['./dialog/index.vue'],resolve)
+    } 
+  },
   setup(props, { refs, root }) {
+    const { categoryInfo, getInfoCategory } = common();
     const { removeTips } = global();
     const keyOptions = reactive([
       {
-        value: "选项1",
+        value: "id",
         label: "ID"
       },{
-        value: "选项2",
+        value: "title",
         label: "标题"
       }
     ])
-    const options = reactive([
-      {
-        value: "选项1",
-        label: "国际信息",
-      },{
-        value: "选项2",
-        label: "国内信息",
-      },{
-        value: "选项3",
-        label: "行业信息",
-      },
-    ]);
-    const tableData = reactive([
-      {
-        date: '上海市普陀区金沙江路 1518 弄',
-        name: '王小虎',
-        address: '2016-05-02',
-        manager: "爸爸",
-      },{
-        date: '上海市普陀区金沙江路 1518 弄',
-        name: '王小虎',
-        address: '2016-05-02',
-        manager: "爸爸",
-      }
-    ])
-    
-    const typeValue = ref("");
-    const keyValue = ref("ID");
-    const dateValue = ref("")
-    const inputValue = ref("")
+    let options = reactive({
+      item: []
+    });
+    const searchOptions = reactive({
+      typeValue: "",
+      dateValue: "",
+      keyValue: "id",
+      inputValue: ""
+    })
+    const tableData = reactive({
+      item: [],
+      total: 0,
+      loading: true
+    })
+    const pageObj = reactive({
+      size: 10 ,
+      current: 1 
+    })
+    // 待删除的信息id
+    const deleteIds = reactive({
+      id: []
+    })
     
     const handleSizeChange = val => {
-      console.log(`每页 ${val} 条`);
+      pageObj.size = val
+      console.log(pageObj);
     }
     const handleCurrentChange = val => {
-      console.log(`当前页: ${val}`);
+      pageObj.current = val
+      getList() //页码改变后 更新列表
     }
     const addNews = () => {
-      refs.dialog.openDialog();
+      refs.addDialog.openDialog();
     }
-    // const removeTips = (value) => {
-      // root.$confirm(value+', 是否继续?', '提示', {
-      //   confirmButtonText: '确定',
-      //   cancelButtonText: '取消',
-      //   type: 'warning',
-      //   // center: true
-      // }).then(() => {
-      //   root.$message({
-      //     type: 'success',
-      //     message: '删除成功!'
-      //   });
-      // }).catch(() => {
-      //   root.$message({
-      //     type: 'info',
-      //     message: '已取消删除'
-      //   });          
-      // });
-    // }
-    const removeNews = () => {
+    const deleteInfo = (id) => {
+      deleteIds.id[0] = id
       removeTips({
-        value: "确认删除当前信息"
+        value: "确认删除当前信息",
+        fn: confirmInfo
+      })
+    }
+    const confirmInfo = () => {
+      DeleteInfo(deleteIds).then(response => {
+        let resData = response.data.data
+        // tableData.item.shift()
+        tableData.total -= resData.data.length
+        // tableData.item.forEach(item1,index => {
+        //   resData.data.forEach( item2 => {
+        //     if(item1.id == item2){
+        //       tableData.item.splice(index,1)
+        //     }
+        //   })
+        // })
+        // 请求删除接口成功后 清空deleteIds
+        deleteIds.id.splice(0,deleteIds.id.length)
+        console.log(resData);
+      }).catch(err => {
+        console.log(err);
       })
     }
     const removeAllNews = () => {
+      if(deleteIds.id.length == 0){
+        root.$message({
+          message: "未选中任何内容",
+          type: "warning"
+        })
+        // 当用户选中再取消时 不能及时清空数组  导致无法弹出此提示
+        // deleteIds.id.splice(0,deleteIds.id.length)
+        return false
+      }
       removeTips({
-        value: "确认删除所有信息"
+        value: "确认删除所选信息",
+        fn: confirmInfo
       })
     }
-    const editNews = () => {
-      console.log("编辑新闻");
+    const editNews = (editObj) => {
+      refs.editDialog.openDialog();
+      refs.editDialog.receiveEditObj(editObj);
     }
+    // 给参数设置一个默认值 
+    const getList = (searchObj = {
+      pageNumber: pageObj.current,
+      pageSize: pageObj.size
+    }) => {
+      tableData.loading = true
+      GetList(searchObj).then(res => {
+        let resData = res.data.data
+        tableData.item = resData.data
+        formatCate() // 返回的数据中未包括分类名，手动格式化
+        tableData.total = res.data.data.total
+        tableData.loading = false
+      }).catch(err => {
+        tableData.loading = false
+        console.log(err);
+      })
+    }
+    // 加载过快  有时会在options.item还未接收到数据时执行 导致分类为空（概率不大，但是会有一定影响）
+    // 解决办法：在tableData.item和options.item获取到值之后 各调用一次(浪费内存)
+    //const formatCate = row => options.item.filter(item => item.id == row.categoryId)[0].category_name
+    const formatCate = () => {
+      tableData.item.forEach(item1 => {
+        options.item.forEach((item2) => {
+          if(item1.categoryId == item2.id){
+            item1.categoryName = item2.category_name
+          }
+        })
+      })
+    }
+    const formatTime = row => formatDate(Number(row.createDate))
+    const handleSelectionChange = (val) => {
+      val.forEach((item,index) => {
+        deleteIds.id[index] = item.id
+      })
+    }
+    const search = () => {
+      let reqData = {
+        categoryId: searchOptions.typeValue,
+        startTime: searchOptions.dateValue[0],
+        endTime: searchOptions.dateValue[1],
+        [searchOptions.keyValue]: searchOptions.inputValue, //我真是个天才 乱写一段代码 竟然也实现了效果
+        pageNumber: pageObj.current,
+        pageSize: pageObj.size
+      }
+      getList(reqData)
+    }
+    onMounted(() => {
+      getInfoCategory()
+      getList()
+    })
+    watch(() => categoryInfo.item,(value) => {
+      options.item = value
+      formatCate()
+    })
     return {
-      options,keyOptions,tableData,
-      typeValue,dateValue,keyValue,inputValue,
-      handleSizeChange,handleCurrentChange,addNews,removeNews,editNews,removeAllNews
+      options,keyOptions,tableData,searchOptions,
+      handleSizeChange,handleCurrentChange,addNews,deleteInfo,editNews,
+      removeAllNews,getList,formatTime,formatCate,handleSelectionChange,search
     };
   },
 };
@@ -213,6 +285,9 @@ export default {
 <style lang="scss">
 .el-table td, .el-table th{
   text-align: center !important;
+}
+.el-table td{
+  padding: 10px 0;
 }
 .el-table .cell{
   line-height: 14px;

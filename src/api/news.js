@@ -1,16 +1,34 @@
 import service from "@/utils/request"
 /**
- * 列表
+ * 获取列表
  */
-
+export function GetList(data){
+  return service.request({
+    method: "POST",
+    url: "/news/getList/",
+    data
+  })
+}
 /**
- * 新增
+ * 新增新闻
  */
-
+export function AddInfo(data){
+  return service.request({
+    method: "POST",
+    url: "/news/add/",
+    data
+  })
+}
 /**
- * 编辑
+ * 修改分类
  */
-
+export function EditCategory(data){
+  return service.request({
+    method: "POST",
+    url: "/news/editCategory/",
+    data
+  })
+}
 /**
  * 删除分类
  */
@@ -32,12 +50,32 @@ export function AddFirstCategory(data){
   })
 }
 /**
- * 获取新闻分类
+ * 获取分类
  */
 export function GetCategory(){
   return service.request({
     method: "POST",
     url: "/news/getCategory/",
     data: {}
+  })
+}
+/**
+ * 删除信息
+ */
+export function DeleteInfo(data){
+  return service.request({
+    method: "POST",
+    url: "/news/deleteInfo/",
+    data 
+  })
+}
+/**
+ * 修改信息
+ */
+export function EditInfo(data){
+  return service.request({
+    method: "POST",
+    url: "/news/editInfo/",
+    data 
   })
 }

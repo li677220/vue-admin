@@ -11,7 +11,8 @@ export function global(){
     }).then(() => {
       params.fn && params.fn()
     }).catch(() => {
-      Message.error('已取消删除');          
+      Message.error('已取消删除');
+      params.catchFn && params.catchFn()         
     });
   }
   return{
