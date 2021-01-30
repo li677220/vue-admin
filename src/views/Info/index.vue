@@ -24,7 +24,7 @@
               start-placeholder="开始日期"
               end-placeholder="结束日期"
               value-format="yyyy-M-d HH:mm:ss"
-              style="max-width: 290px"
+              style="max-width: 280px"
             >
             </el-date-picker>
         </label>
@@ -99,7 +99,7 @@ export default {
     } 
   },
   setup(props, { refs, root }) {
-    const { categoryInfo, getInfoCategory } = common();
+    const { categoryInfo, getInfoCategory, getInfoCategoryAll } = common();
     const { removeTips } = global();
     const keyOptions = reactive([
       {
@@ -236,10 +236,11 @@ export default {
       getList(reqData)
     }
     onMounted(() => {
-      getInfoCategory()
+      getInfoCategoryAll()
       getList()
     })
     watch(() => categoryInfo.item,(value) => {
+      console.log(categoryInfo.item);
       options.item = value
       formatCate()
     })

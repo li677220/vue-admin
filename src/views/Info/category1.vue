@@ -6,28 +6,12 @@
     <el-row :gutter="30">
       <el-col :span="10">
         <div class="cate-left">
-          <div class="category-item" v-for="(item,i) in category.item" :key="i">
-            <!-- 一级分类 -->
-            <h4>
-              <svg-icon iconClass="plus" className="plus"></svg-icon>
-              <span>{{item.category_name}}{{item.id}}</span>
-              <div class="btn-group">
-                <el-button size="mini" type="danger" round @click="editCategory({data: item, type: 'category_first_edit'})">编辑</el-button>
-                <el-button size="mini" type="success" round @click="addSecondCate({data: item, type: 'category_second_add'})">添加子级</el-button>
-                <el-button size="mini" type="" round @click="deleteCategory(item.id)">删除</el-button>
-              </div>
-            </h4>
-            <!-- 二级分类 -->
-            <ul v-if="item.children">
-              <li v-for="(subitem,j) in item.children" :key="j">
-                <span>{{subitem.category_name}}</span>
-                <div class="btn-group">
-                  <el-button size="mini" type="danger" round>编辑</el-button>
-                  <el-button size="mini" type="" round>删除</el-button>
-                </div>
-              </li>
-            </ul>
-          </div>
+          <el-tree
+            :data="data.item"
+            :props="defaultProps"
+            accordion
+            @node-click="handleNodeClick">
+          </el-tree>
         </div>
       </el-col>
       <el-col :span="14">
@@ -85,15 +69,47 @@ export default {
       item: [],
       current: {}
     });
-    // const changeInputStatus = (params) => {
-    //   console.log(params);
-    //   inputStatus.first = params.first || inputStatus.first,
-    //   inputStatus.firstInputDis = params.firstInputDis || inputStatus.firstInputDis,
-    //   inputStatus.second = params.second || inputStatus.second,
-    //   inputStatus.secondInputDis = params.secondInputDis || inputStatus.secondInputDis,
-    //   confirmBtnStatus.loading = params.confirmBtnLoading || confirmBtnStatus.loading,
-    //   confirmBtnStatus.disable = params.confirmBtnDisable || confirmBtnStatus.disable
-    // }
+    const data = reactive({
+      item:[{
+          label: '一级 1',
+          children: [{
+            label: '二级 1-1',
+            children: [{
+              label: '三级 1-1-1'
+            }]
+          }]
+        }, {
+          label: '一级 2',
+          children: [{
+            label: '二级 2-1',
+            children: [{
+              label: '三级 2-1-1'
+            }]
+          }, {
+            label: '二级 2-2',
+            children: [{
+              label: '三级 2-2-1'
+            }]
+          }]
+        }, {
+          label: '一级 3',
+          children: [{
+            label: '二级 3-1',
+            children: [{
+              label: '三级 3-1-1'
+            }]
+          }, {
+            label: '二级 3-2',
+            children: [{
+              label: '三级 3-2-1'
+            }]
+          }]
+        }]
+    })
+    const defaultProps = reactive({
+      children: 'children',
+      label: 'label'
+    })
     const addFirstCategory = () => {
       if (cateForm.first == "") {
         root.$message({
@@ -102,19 +118,19 @@ export default {
         });
         return false;
       }
-      // 添加分类
       if(confirmBtnStatus.type == "category_first_add"){
+        // 添加分类
         confirmTypeAdd()
       }else if(confirmBtnStatus.type == "category_first_edit"){
-      //修改分类
+        //修改分类
         confirmTypeEdit()
       }else if(confirmBtnStatus.type == "category_second_add"){
+        //添加二级分类
         confirmSecondAdd()
       }
       
     };
     const confirmTypeAdd = () => {
-      // confirmBtnStatus.loading = true
         let requestData = {
           categoryName: cateForm.first,
         };
@@ -168,20 +184,7 @@ export default {
         console.log(err);
       })
     }
-    // const getCategory = () => {
-    //   GetCategory().then(response => {
-    //     let resData = response.data.data.data
-    //     category.item = resData
-    //   }).catch(err => {
-    //     console.log(err);
-    //   })
-    // }
     const add = (params) => {
-      // changeInputStatus({
-      //   firstInputDis: false,
-      //   second: false,
-      //   confirmBtnDisable: false
-      // })
       cateForm.first = ""
       inputStatus.second = false;
       inputStatus.firstInputDis = false
@@ -232,6 +235,9 @@ export default {
     const hasFocus = () => {
       confirmBtnStatus.disable = false
     }
+    const handleNodeClick =(data) => {
+        console.log(data);
+      }
     onMounted(() => {
       getInfoCategoryAll()
       console.log(categoryInfo);
@@ -240,8 +246,8 @@ export default {
       category.item = value
     })
     return {
-      cateForm, inputStatus, category, confirmBtnStatus,
-      addFirstCategory, add, deleteCategory,editCategory,addSecondCate,hasFocus
+      cateForm, inputStatus, category, confirmBtnStatus,data,defaultProps,
+      addFirstCategory, add, deleteCategory,editCategory,addSecondCate,hasFocus,handleNodeClick
     };
   },
   

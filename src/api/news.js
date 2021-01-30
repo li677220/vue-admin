@@ -50,12 +50,22 @@ export function AddFirstCategory(data){
   })
 }
 /**
- * 获取分类
+ * 获取分类（无子级分类）
  */
 export function GetCategory(){
   return service.request({
     method: "POST",
     url: "/news/getCategory/",
+    data: {}
+  })
+}
+/**
+ * 获取分类（有子级分类）
+ */
+export function GetCategoryAll(){
+  return service.request({
+    method: "POST",
+    url: "/news/getCategoryAll/",
     data: {}
   })
 }
@@ -76,6 +86,16 @@ export function EditInfo(data){
   return service.request({
     method: "POST",
     url: "/news/editInfo/",
+    data 
+  })
+}
+/**
+ * 添加子级分类
+ */
+export function AddChildrenCategory(data){
+  return service.request({
+    method: "POST",
+    url: "/news/addChildrenCategory/",
     data 
   })
 }
