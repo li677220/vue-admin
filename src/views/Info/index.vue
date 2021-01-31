@@ -57,9 +57,10 @@
       <el-table-column prop="categoryName" label="类型" width="130"></el-table-column>
       <el-table-column prop="createDate" label="日期" width="240" :formatter="formatTime"></el-table-column>
       <el-table-column prop="manager" label="管理人" width="115"></el-table-column>
-      <el-table-column prop="operation" label="操作" width="150">
+      <el-table-column prop="operation" label="操作" width="240">
         <template v-slot="scope">
           <el-button type="danger" size="mini" @click="deleteInfo(scope.row.id)">删除</el-button>
+          <el-button type="success" size="mini" @click="editDetails(scope.row)">编辑详情</el-button>
           <el-button type="success" size="mini" @click="editNews(scope.row)">编辑</el-button>
         </template>
       </el-table-column>
@@ -185,6 +186,16 @@ export default {
         fn: confirmInfo
       })
     }
+    const editDetails = (editObj) => {
+      root.$router.push({
+        name: "Detailed",
+        params: {
+          id: editObj.id,
+          title: editObj.title
+        }
+      })
+      root.$store.commit("detailed/updateState",editObj)
+    }
     const editNews = (editObj) => {
       refs.editDialog.openDialog();
       refs.editDialog.receiveEditObj(editObj);
@@ -240,14 +251,13 @@ export default {
       getList()
     })
     watch(() => categoryInfo.item,(value) => {
-      console.log(categoryInfo.item);
       options.item = value
       formatCate()
     })
     return {
       options,keyOptions,tableData,searchOptions,
       handleSizeChange,handleCurrentChange,addNews,deleteInfo,editNews,
-      removeAllNews,getList,formatTime,formatCate,handleSelectionChange,search
+      removeAllNews,getList,formatTime,formatCate,handleSelectionChange,search,editDetails
     };
   },
 };

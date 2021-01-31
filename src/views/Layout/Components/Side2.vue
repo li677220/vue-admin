@@ -12,7 +12,7 @@
             <span slot="title">{{item.meta.name}}</span>
           </template>
           <div v-for="(subitem,j) in item.children" :key="j" @click.stop="openRoute(subitem)">
-            <el-menu-item :index="i+'-'+j">{{subitem.meta.name}}</el-menu-item>
+            <el-menu-item :index="i+'-'+j" v-show="!subitem.hidden">{{subitem.meta.name}}</el-menu-item>
           </div>
         </el-submenu>
       </div> 
