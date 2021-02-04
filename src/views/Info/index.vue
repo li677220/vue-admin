@@ -4,14 +4,15 @@
       <el-col :span="4">
         <label for="">
           <span class="label-value">类型:</span>
-          <el-select v-model="searchOptions.typeValue" placeholder="请选择" style="max-width: 120px">
+          <!-- <el-select v-model="searchOptions.typeValue" placeholder="请选择" style="max-width: 120px">
             <el-option
               v-for="item in options.item"
               :key="item.id"
               :label="item.category_name"
               :value="item.id"
             ></el-option>
-          </el-select>
+          </el-select> -->
+          <SelectCmp :config="configOptions"/>
         </label>
       </el-col>
       <el-col :span="7">
@@ -88,6 +89,7 @@
 
 <script>
 import { GetCategory, GetList, DeleteInfo } from "@/api/news";
+import SelectCmp from "@/components/Select/index.vue"
 import { formatDate } from "@/utils/common.js"
 import { common } from "@/api/common.js"
 import { global } from "@/utils/globalv3.js"
@@ -97,7 +99,7 @@ export default {
   name: "InfoIndex",
   components: { dialogInfo:resolve => {
     require(['./dialog/index.vue'],resolve)
-    } 
+    }, SelectCmp
   },
   setup(props, { refs, root }) {
     const { categoryInfo, getInfoCategory, getInfoCategoryAll } = common();
@@ -114,6 +116,10 @@ export default {
     let options = reactive({
       item: []
     });
+    const configOptions = reactive({
+      // 下拉框需要的内容
+      options:["id","title"]
+    })
     const searchOptions = reactive({
       typeValue: "",
       dateValue: "",
@@ -256,7 +262,7 @@ export default {
     })
     return {
       options,keyOptions,tableData,searchOptions,
-      handleSizeChange,handleCurrentChange,addNews,deleteInfo,editNews,
+      handleSizeChange,handleCurrentChange,addNews,deleteInfo,editNews,configOptions,
       removeAllNews,getList,formatTime,formatCate,handleSelectionChange,search,editDetails
     };
   },
@@ -289,19 +295,6 @@ export default {
       padding: 2px 0;
     }
   }
- 
 }
 
 </style>
-<style lang="scss">
-.el-table td, .el-table th{
-  text-align: center !important;
-}
-.el-table td{
-  padding: 10px 0;
-}
-.el-table .cell{
-  line-height: 14px;
-  color: #000;
-}
-</style>>
