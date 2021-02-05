@@ -1,7 +1,14 @@
 <template>
   <el-table :data="data.tableData" border style="width: 100%">
     <el-table-column type="selection" width="55" v-if="data.configTable.selection"></el-table-column>
-    <el-table-column v-for="(item,i) in data.configTable.tHead" :key="i" :prop="item.field" :label="item.label" :width="item.width"></el-table-column>
+    <template v-for="(item,i) in data.configTable.tHead">
+      <el-table-column :key="i" v-if="item.columnType === 'slot'" :prop="item.field" :label="item.label" :width="item.width">
+        <template v-slot="scope">
+          <slot :name="item.slotName" :data="scope.row"></slot>
+        </template>
+      </el-table-column>  
+      <el-table-column :key="i" :prop="item.field" :label="item.label" :width="item.width" v-else></el-table-column>  
+    </template>
   </el-table>
 </template>
 <script>
@@ -20,13 +27,29 @@ setup (props,context) {
       phone: '20160502',
       name: '王小虎',
       address: '上海市普陀区金沙江路 1518 弄',
-      role: "admin"
+      role: "admin",
+      status: true,
     }, {
       email: "li888@163.com",
       phone: '20160502',
       name: '王小虎',
       address: '上海市普陀区金沙江路 1518 弄',
-      role: "admin"
+      role: "admin",
+      status: false,
+    }, {
+      email: "li888@163.com",
+      phone: '20160502',
+      name: '王小虎',
+      address: '上海市普陀区金沙江路 1518 弄',
+      role: "admin",
+      status: false,
+    }, {
+      email: "li888@163.com",
+      phone: '20160502',
+      name: '王小虎',
+      address: '上海市普陀区金沙江路 1518 弄',
+      role: "admin",
+      status: true,
     }],
     configTable: {
       selection: true,

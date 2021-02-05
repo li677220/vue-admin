@@ -25,7 +25,15 @@
         <el-button type="primary" icon="el-icon-plus" class="full-right">添加用户</el-button>
       </el-col>
     </el-row>
-    <TableCmp :config="configTable"></TableCmp>
+    <TableCmp :config="configTable">
+      <template v-slot:status="slotData">
+        <el-switch v-model="slotData.data.status" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+      </template>
+      <template v-slot:handle="slotData">
+        <el-button size="mini" type="danger" @click="removeItem(slotData.data)">删除</el-button>
+        <el-button size="mini" type="success" @click="editItem(slotData.data)">操作</el-button>
+      </template>
+    </TableCmp>
  </div>
 </template>
 
@@ -46,11 +54,11 @@ export default {
       tHead: [{
         label: "邮箱/用户名",
         field: "email",
-        width: "180"
+        width: "160"
       }, {
         label: "姓名",
         field: "name",
-        width: "180"
+        width: "120"
       }, {
         label: "手机号",
         field: "phone",
@@ -63,6 +71,18 @@ export default {
         label: "角色",
         field: "role",
         width: "180"
+      }, {
+        label: "禁启用状态",
+        field: "status",
+        width: "120",
+        columnType: "slot",
+        slotName: "status"
+      }, {
+        label: "操作",
+        field: "handle",
+        width: "180",
+        columnType: "slot",
+        slotName: "handle"
       }]
     })
     const searchContent = reactive({
@@ -75,8 +95,15 @@ export default {
       address: "",
       email: ""
     })
+    const removeItem = (params) => {
+      console.log(params);
+    }
+    const editItem = (params) => {
+      console.log(params);
+    }
     return{
-      userForm,searchContent,configOptions,configTable
+      userForm,configOptions,configTable,
+      searchContent,removeItem,editItem
     }
   }
 }
