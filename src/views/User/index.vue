@@ -22,7 +22,7 @@
         <el-button type="primary" icon="el-icon-search">搜索</el-button>
       </el-col>
       <el-col :span="15">
-        <el-button type="primary" icon="el-icon-plus" class="full-right">添加用户</el-button>
+        <el-button type="primary" icon="el-icon-plus" class="full-right" @click="addUser">添加用户</el-button>
       </el-col>
     </el-row>
     <TableCmp :config="configTable">
@@ -40,7 +40,8 @@
 <script>
 import { reactive } from '@vue/composition-api'
 import SelectCmp from "@/components/Select/index.vue"
-import TableCmp from "@/components/Table/index.vue" 
+import TableCmp from "@/components/Table/index.vue"
+import { AddUser } from "@/api/user.js" 
 export default {
   name: "UserIndex",
   components: { SelectCmp, TableCmp },
@@ -83,7 +84,8 @@ export default {
         width: "180",
         columnType: "slot",
         slotName: "handle"
-      }]
+      }],
+      requestUrl: "/user/getList/"
     })
     const searchContent = reactive({
       selectValue: "",
@@ -101,9 +103,25 @@ export default {
     const editItem = (params) => {
       console.log(params);
     }
+    const addUser = () => {
+      let reqData = {
+        username: "li677220@163.com",
+        truename: "李江",
+        password: "LIJIANG5201314",
+        phone: 18582266536,
+        region: {},
+        status: "1",
+        role: "info, user"
+      }
+      AddUser(reqData).then(res => {
+        console.log(res);
+      }).catch(err => {
+        console.log(err);
+      })
+    }
     return{
       userForm,configOptions,configTable,
-      searchContent,removeItem,editItem
+      searchContent,removeItem,editItem,addUser
     }
   }
 }

@@ -12,7 +12,9 @@
   </el-table>
 </template>
 <script>
-import { reactive, watch } from '@vue/composition-api'
+import { onBeforeMount, reactive, watch, watchEffect } from '@vue/composition-api'
+import { GetUserList } from "@/api/user.js"
+import { loadData } from "./loadData"
 export default {
 props: {
   config: {
@@ -21,6 +23,9 @@ props: {
   }
 },
 setup (props,context) {
+  const { tableData, loadingData } = loadData()
+  loadingData()
+  console.log(tableData);
   const data = reactive({
     tableData: [{
       email: "li888@163.com",
@@ -29,38 +34,23 @@ setup (props,context) {
       address: '上海市普陀区金沙江路 1518 弄',
       role: "admin",
       status: true,
-    }, {
-      email: "li888@163.com",
-      phone: '20160502',
-      name: '王小虎',
-      address: '上海市普陀区金沙江路 1518 弄',
-      role: "admin",
-      status: false,
-    }, {
-      email: "li888@163.com",
-      phone: '20160502',
-      name: '王小虎',
-      address: '上海市普陀区金沙江路 1518 弄',
-      role: "admin",
-      status: false,
-    }, {
-      email: "li888@163.com",
-      phone: '20160502',
-      name: '王小虎',
-      address: '上海市普陀区金沙江路 1518 弄',
-      role: "admin",
-      status: true,
     }],
     configTable: {
-      selection: true,
+      selection: false,
+      requestUrl: "",
       tHead: []
     }
   })
-  // data.configTable = props.config
-  watch(() => props.config,value => {
-    data.configTable = value
-  },{
+  // 监听表格数据
+  watchEffect(() => {
+    data.tableData = tableData.item
+  })
+  //监听父组件传入的表头数据
+  watch(() => props.config, value => data.configTable = value,{
     immediate: true //初次加载时是否监听（绑定时加载）
+  })
+  onBeforeMount(() => {
+    // loadData()
   })
   return {
     data
