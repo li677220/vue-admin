@@ -1,4 +1,5 @@
 <template>
+<div>
   <el-table :data="data.tableData" border style="width: 100%">
     <el-table-column type="selection" width="55" v-if="data.configTable.selection"></el-table-column>
     <template v-for="(item,i) in data.configTable.tHead">
@@ -10,11 +11,22 @@
       <el-table-column :key="i" :prop="item.field" :label="item.label" :width="item.width" v-else></el-table-column>  
     </template>
   </el-table>
+  <el-pagination
+    v-if="data.configTable.pagination"
+    @size-change="handleSizeChange"
+    @current-change="handleCurrentChange"
+    :current-page="pageData.currentPage"
+    :page-sizes="pageData.pageSizes"
+    :page-size="pageData.pageSize"
+    layout="total, sizes, prev, pager, next, jumper"
+    :total="pageData.total" background>
+  </el-pagination>
+</div>
 </template>
 <script>
-import { onBeforeMount, reactive, watch, watchEffect } from '@vue/composition-api'
-import { GetUserList } from "@/api/user.js"
+import { reactive, watch, watchEffect } from '@vue/composition-api'
 import { loadData } from "./loadData"
+import { pagination } from "./pagination"
 export default {
 props: {
   config: {
@@ -24,42 +36,48 @@ props: {
 },
 setup (props,context) {
   const { tableData, loadingData } = loadData()
-  loadingData()
-  console.log(tableData);
+  const { pageData, handleSizeChange, handleCurrentChange } = pagination()
+  // 初始加载10条数据
+  loadingData({
+    pageNumber:1,
+    pageSize:10
+  })
   const data = reactive({
-    tableData: [{
-      email: "li888@163.com",
-      phone: '20160502',
-      name: '王小虎',
-      address: '上海市普陀区金沙江路 1518 弄',
-      role: "admin",
-      status: true,
-    }],
+    tableData: [],
     configTable: {
-      selection: false,
-      requestUrl: "",
-      tHead: []
+      selection: true,
+      // requestUrl: "",
+      tHead: [],
+      pagination: true
     }
   })
   // 监听表格数据
   watchEffect(() => {
-    data.tableData = tableData.item
+    // 更新页码
+    pageData.total = tableData.total
   })
   //监听父组件传入的表头数据
-  watch(() => props.config, value => data.configTable = value,{
+  watch([
+    () => props.config,
+    () => tableData.item
+    ], ([config,item]) => {
+      data.configTable = config //更新表头
+      data.tableData = item //更新数据
+    },{
     immediate: true //初次加载时是否监听（绑定时加载）
   })
-  onBeforeMount(() => {
-    // loadData()
-  })
   return {
-    data
+    data, pageData,
+    handleSizeChange, handleCurrentChange
   }
 },
 }
 </script>
 
 <style lang='scss' scoped>
-
+.el-pagination{
+  padding-right: 0;
+  float: right;
+}
  
 </style>

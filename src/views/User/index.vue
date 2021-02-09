@@ -54,7 +54,8 @@ export default {
       selection: true, //是否需要表格前面的多选框,默认为true
       tHead: [{
         label: "邮箱/用户名",
-        field: "email",
+        // field: "email",
+        field: "title",
         width: "160"
       }, {
         label: "姓名",
@@ -85,7 +86,9 @@ export default {
         columnType: "slot",
         slotName: "handle"
       }],
-      requestUrl: "/user/getList/"
+      // requestUrl: "/user/getList/",
+      //是否需要显示页码,默认为true
+      pagination: true
     })
     const searchContent = reactive({
       selectValue: "",
