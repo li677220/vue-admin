@@ -23,11 +23,23 @@ export function common(){
     categoryInfo,getInfoCategory,getInfoCategoryAll
   }
 }
-
+/**
+ * 获取七牛Token
+ */
 export function GetQiniuToken(data){
   return service.request({
     method: "POST",
     url: "/uploadImgToken/",
+    data
+  })
+}
+/**
+ * 获取省市区
+ */
+export function GetCity(data){
+  return service.request({
+    method: "POST",
+    url: "/cityPicker/",
     data
   })
 }

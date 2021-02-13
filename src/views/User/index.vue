@@ -34,6 +34,7 @@
         <el-button size="mini" type="success" @click="editItem(slotData.data)">操作</el-button>
       </template>
     </TableCmp>
+    <AddUserCmp ref="addUserDialog"></AddUserCmp>
  </div>
 </template>
 
@@ -42,10 +43,11 @@ import { reactive } from '@vue/composition-api'
 import SelectCmp from "@/components/Select/index.vue"
 import TableCmp from "@/components/Table/index.vue"
 import { AddUser } from "@/api/user.js" 
+import AddUserCmp from "./dialog/add.vue"
 export default {
   name: "UserIndex",
-  components: { SelectCmp, TableCmp },
-  setup(props,{ root }){
+  components: { SelectCmp, TableCmp, AddUserCmp },
+  setup(props,{ root, refs }){
     const configOptions = reactive({
       // 下拉框需要的内容
       options:["name","phone","email"]
@@ -107,20 +109,7 @@ export default {
       console.log(params);
     }
     const addUser = () => {
-      let reqData = {
-        username: "li677220@163.com",
-        truename: "李江",
-        password: "LIJIANG5201314",
-        phone: 18582266536,
-        region: {},
-        status: "1",
-        role: "info, user"
-      }
-      AddUser(reqData).then(res => {
-        console.log(res);
-      }).catch(err => {
-        console.log(err);
-      })
+      refs.addUserDialog.openDialog()
     }
     return{
       userForm,configOptions,configTable,

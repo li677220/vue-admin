@@ -11,7 +11,6 @@ export function loadData(){
       let resData = res.data.data
       tableData.item = resData.data
       tableData.total = resData.total
-      console.log(tableData);
     }).catch(err => {
       console.log(err);
     })
