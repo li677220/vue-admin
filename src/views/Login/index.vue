@@ -273,14 +273,14 @@ export default {
     const copySms = () => {
       console.log(123);
     };
+    onUnmounted(() => {
+      clearInterval(timer)
+    })
     return{
       menuTab,ruleForm,rules,sms,
       model,loginBtn,
       switchStatus,submitForm,getSms,copySms
     }
-    onUnmounted(() => {
-      clearInterval(timer)
-    })
   },
 };
 </script>

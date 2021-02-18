@@ -49,3 +49,13 @@ export function DisableUser(data){
     data
   })
 }
+/**
+ * 获取角色
+ */
+export function GetRole(data){
+  return service.request({
+    method: "POST",
+    url: "/role/",
+    data
+  })
+}

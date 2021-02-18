@@ -4,15 +4,15 @@
       <el-col :span="4">
         <label for="">
           <span class="label-value">类型:</span>
-          <!-- <el-select v-model="searchOptions.typeValue" placeholder="请选择" style="max-width: 120px">
+          <el-select v-model="searchOptions.typeValue" placeholder="请选择" style="max-width: 120px">
             <el-option
               v-for="item in options.item"
               :key="item.id"
               :label="item.category_name"
               :value="item.id"
             ></el-option>
-          </el-select> -->
-          <SelectCmp :config="configOptions"/>
+          </el-select>
+          <!-- <SelectCmp :config="configOptions"/> -->
         </label>
       </el-col>
       <el-col :span="7">
