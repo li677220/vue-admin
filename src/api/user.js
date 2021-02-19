@@ -5,7 +5,7 @@ import service from "@/utils/request"
 export function GetUserList(data){
   return service.request({
     method: "POST",
-    url: "/news/getList/",
+    url: "/user/getList/",
     data
   })
 }

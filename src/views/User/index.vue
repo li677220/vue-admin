@@ -25,16 +25,20 @@
         <el-button type="primary" icon="el-icon-plus" class="full-right" @click="addUser">添加用户</el-button>
       </el-col>
     </el-row>
-    <TableCmp :config="configTable">
+    <TableCmp :config="configTable" ref="tableCmp">
       <template v-slot:status="slotData">
-        <el-switch v-model="slotData.data.status" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+        <!--  active-value="2"(启用) inactive-value="1"(禁用)  -->
+        <el-switch v-model="slotData.data.status" active-value="2" inactive-value="1" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
       </template>
       <template v-slot:handle="slotData">
         <el-button size="mini" type="danger" @click="removeItem(slotData.data)">删除</el-button>
         <el-button size="mini" type="success" @click="editItem(slotData.data)">操作</el-button>
       </template>
+      <!-- <template v-slot:batchRemove="slotData">
+        <el-button size="small" @click="removeItem(slotData.data)">批量删除</el-button>
+      </template> -->
     </TableCmp>
-    <AddUserCmp ref="addUserDialog"></AddUserCmp>
+    <AddUserCmp ref="addUserDialog" @getUserList="getUserList"></AddUserCmp>
  </div>
 </template>
 
@@ -42,7 +46,7 @@
 import { reactive } from '@vue/composition-api'
 import SelectCmp from "@/components/Select/index.vue"
 import TableCmp from "@/components/Table/index.vue"
-import { AddUser } from "@/api/user.js" 
+import { DeleteUser } from "@/api/user.js" 
 import AddUserCmp from "./dialog/add.vue"
 export default {
   name: "UserIndex",
@@ -56,12 +60,12 @@ export default {
       selection: true, //是否需要表格前面的多选框,默认为true
       tHead: [{
         label: "邮箱/用户名",
-        // field: "email",
-        field: "title",
+        field: "username",
+        // field: "title",
         width: "160"
       }, {
         label: "姓名",
-        field: "name",
+        field: "truename",
         width: "120"
       }, {
         label: "手机号",
@@ -69,7 +73,7 @@ export default {
         width: "180"
       }, {
         label: "地址",
-        field: "address",
+        field: "region",
         // width: "180"
       }, {
         label: "角色",
@@ -102,8 +106,23 @@ export default {
       address: "",
       email: ""
     })
+    const getUserList = () => {
+      refs['tableCmp'].getList()
+    }
     const removeItem = (params) => {
       console.log(params);
+      let reqData = {
+        id: [params.id]
+      }
+      // console.log(refs['tableCmp']);
+      // return false
+      DeleteUser(reqData).then(res => {
+        console.log(res);
+        // 删除成功，更新数据
+        getUserList()
+      }).catch(err => {
+        console.log(err);
+      })
     }
     const editItem = (params) => {
       console.log(params);
@@ -113,7 +132,7 @@ export default {
     }
     return{
       userForm,configOptions,configTable,
-      searchContent,removeItem,editItem,addUser
+      searchContent,removeItem,editItem,addUser,getUserList
     }
   }
 }

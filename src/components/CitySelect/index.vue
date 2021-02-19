@@ -57,10 +57,10 @@ setup(props,context){
     street: []
   })
   const currentData = reactive({
-    provinceValue: "",
-    cityValue: "",
-    areaValue: "",
-    streetValue: ""
+    province: "",
+    city: "",
+    area: "",
+    street: ""
   })
   const getProvince = () => {
     GetCity({type: "province"}).then(res => {

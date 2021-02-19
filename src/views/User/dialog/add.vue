@@ -41,17 +41,18 @@
 </template>
 
 <script>
+import sha1 from "sha1"
 import { reactive, ref } from '@vue/composition-api'
 import CitySelect from "@/components/CitySelect/index.vue"
 import { GetRole, AddUser } from "@/api/user.js"
 export default {
 components: { CitySelect },
 setup(props,context){
-  const addForm = reactive({
-    username: '',
-    truename: '',
-    password: '',
-    phone: '',
+    const addForm = reactive({
+    username: 'li888@163.com',
+    truename: '李江',
+    password: 'LJ18582266536',
+    phone: '18582266536',
     region: null,
     status: '2',
     role: [],
@@ -78,6 +79,7 @@ setup(props,context){
   // 提交表单前 将表单数据格式化为所需的格式
   const formatAddform = () => {
     addForm.region = JSON.stringify(context.refs['citySelect'].getAddress())
+    // addForm.password = sha1(addForm.password)
   }
   const addUser = () => {
     // dialogVisible.value = false
@@ -87,13 +89,14 @@ setup(props,context){
     // JSON.parse(JSON.stringify(addForm)) 当属性中含有函数、undefined、Symbol时,属性会丢失
     let reqData = JSON.parse(JSON.stringify(addForm))
     reqData.role = reqData.role.toString()
+    reqData.password = sha1(reqData.password)
     AddUser(reqData).then(res => {
-      console.log(res);
+      dialogVisible.value = false
+      // 用户添加成功 清空表单 刷新数据
+      context.emit("getUserList")
     }).catch(err => {
       console.log(err);
     })
-    console.log(addForm);
-    // console.log(JSON.stringify(context.refs['citySelect'].getAddress()));
   }
   return{
     addForm,checkboxList,
