@@ -62,6 +62,11 @@ setup(props,context){
     area: "",
     street: ""
   })
+  const resetCurrentData = () => {
+    for(var item in currentData){
+      currentData[item] = ""
+    }
+  }
   const getProvince = () => {
     GetCity({type: "province"}).then(res => {
       let resData = res.data.data.data
@@ -118,7 +123,7 @@ setup(props,context){
   })
   return{
     data,currentData,
-    getProvince,changePro,changeCity,changeArea,getAddress
+    getProvince,changePro,changeCity,changeArea,getAddress,resetCurrentData
   }
 }
 }

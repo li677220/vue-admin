@@ -34,3 +34,11 @@ export function validateCode(value){
   let reg = /^[0-9a-z]{6}$/;
   return reg.test(value)
 }
+/**
+ * 验证手机号
+ * @param {*} value 手机号
+ */
+export function validatePhone(value){
+  let reg = /^1[34578]\d{9}$/;
+  return reg.test(value)
+}

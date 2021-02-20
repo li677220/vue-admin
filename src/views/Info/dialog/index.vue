@@ -138,12 +138,4 @@ export default {
 .v-modal{
   visibility: hidden;
 }
-.el-dialog__footer{
-  text-align: center;
-  padding: 0 20px 35px !important;
-  button{
-    width: 120px;
-  }
-}
- 
 </style>

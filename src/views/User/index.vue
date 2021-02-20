@@ -28,7 +28,8 @@
     <TableCmp :config="configTable" ref="tableCmp">
       <template v-slot:status="slotData">
         <!--  active-value="2"(启用) inactive-value="1"(禁用)  -->
-        <el-switch v-model="slotData.data.status" active-value="2" inactive-value="1" active-color="#13ce66" inactive-color="#ff4949"></el-switch>
+        <el-switch v-model="slotData.data.status" active-value="2" inactive-value="1" :disabled="disableSwitch"
+        active-color="#13ce66" inactive-color="#ff4949" @change="disableUser(slotData.data)"></el-switch>
       </template>
       <template v-slot:handle="slotData">
         <el-button size="mini" type="danger" @click="removeItem(slotData.data)">删除</el-button>
@@ -38,20 +39,22 @@
         <el-button size="small" @click="removeItem(slotData.data)">批量删除</el-button>
       </template> -->
     </TableCmp>
-    <AddUserCmp ref="addUserDialog" @getUserList="getUserList"></AddUserCmp>
+    <AddUserCmp ref="addUserDialog" @getUserList="getUserList" :model="model"></AddUserCmp>
  </div>
 </template>
 
 <script>
-import { reactive } from '@vue/composition-api'
+import { reactive, ref } from '@vue/composition-api'
 import SelectCmp from "@/components/Select/index.vue"
 import TableCmp from "@/components/Table/index.vue"
-import { DeleteUser } from "@/api/user.js" 
+import { DeleteUser, DisableUser } from "@/api/user.js" 
 import AddUserCmp from "./dialog/add.vue"
+import { global } from "@/utils/globalv3.js"
 export default {
   name: "UserIndex",
   components: { SelectCmp, TableCmp, AddUserCmp },
   setup(props,{ root, refs }){
+    const { removeTips } = global()
     const configOptions = reactive({
       // 下拉框需要的内容
       options:["name","phone","email"]
@@ -106,33 +109,59 @@ export default {
       address: "",
       email: ""
     })
+    const disableSwitch = ref(false)
+    let model = reactive({
+      type: ""
+    })
     const getUserList = () => {
       refs['tableCmp'].getList()
     }
     const removeItem = (params) => {
-      console.log(params);
+      removeTips({
+        value: "确认删除当前信息",
+        fn: function(){
+          let reqData = { 
+            id: [params.id]
+          }
+          // console.log(refs['tableCmp']);
+          // return false
+          DeleteUser(reqData).then(res => {
+            // 删除成功，更新数据
+            getUserList()
+          }).catch(err => {
+            console.log(err);
+          })
+        }
+      }) 
+    }
+    const editItem = (params) => {
+      model.type = "edit"
+      refs.addUserDialog.receiveEditData(params)
+      refs.addUserDialog.openDialog()
+    }
+    const addUser = () => {
+      model.type = "add"
+      refs.addUserDialog.openDialog()
+    }
+    const disableUser = (params) => {
       let reqData = {
-        id: [params.id]
+        id: params.id,
+        status: params.status
       }
-      // console.log(refs['tableCmp']);
-      // return false
-      DeleteUser(reqData).then(res => {
+      DisableUser(reqData).then(res => {
         console.log(res);
-        // 删除成功，更新数据
-        getUserList()
       }).catch(err => {
         console.log(err);
       })
-    }
-    const editItem = (params) => {
-      console.log(params);
-    }
-    const addUser = () => {
-      refs.addUserDialog.openDialog()
+      disableSwitch.value = true
+      setTimeout(() => {
+        disableSwitch.value = false
+      },5000)
     }
     return{
       userForm,configOptions,configTable,
-      searchContent,removeItem,editItem,addUser,getUserList
+      disableSwitch,model,
+      searchContent,removeItem,editItem,addUser,getUserList,disableUser
     }
   }
 }
