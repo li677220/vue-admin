@@ -12,14 +12,14 @@
               :value="item.value"
             ></el-option>
           </el-select> -->
-          <SelectCmp :config="configOptions"/>
+          <SelectCmp :config="configOptions" ref="selectCmp"/>
         </label>
       </el-col>
       <el-col :span="3">
         <el-input v-model="searchContent.keyWords" placeholder="请输入" style="width:130px"></el-input>
       </el-col>
       <el-col :span="2">
-        <el-button type="primary" icon="el-icon-search">搜索</el-button>
+        <el-button type="primary" icon="el-icon-search" @click="searchUser">搜索</el-button>
       </el-col>
       <el-col :span="15">
         <el-button type="primary" icon="el-icon-plus" class="full-right" @click="addUser">添加用户</el-button>
@@ -47,7 +47,7 @@
 import { reactive, ref } from '@vue/composition-api'
 import SelectCmp from "@/components/Select/index.vue"
 import TableCmp from "@/components/Table/index.vue"
-import { DeleteUser, DisableUser } from "@/api/user.js" 
+import { DeleteUser, DisableUser, GetUserList } from "@/api/user.js" 
 import AddUserCmp from "./dialog/add.vue"
 import { global } from "@/utils/globalv3.js"
 export default {
@@ -57,7 +57,7 @@ export default {
     const { removeTips } = global()
     const configOptions = reactive({
       // 下拉框需要的内容
-      options:["name","phone","email"]
+      options:["phone","username"]
     })
     const configTable = reactive({
       selection: true, //是否需要表格前面的多选框,默认为true
@@ -97,7 +97,8 @@ export default {
       }],
       // requestUrl: "/user/getList/",
       //是否需要显示页码,默认为true
-      pagination: true
+      pagination: true,
+      load: true
     })
     const searchContent = reactive({
       selectValue: "",
@@ -158,10 +159,19 @@ export default {
         disableSwitch.value = false
       },5000)
     }
+    const searchUser = () => {
+      let {key} = refs['selectCmp'].getCurrentSelect()
+      let reqData = {
+        [key]: searchContent.keyWords,
+        pageNumber: 1,
+        pageSize: 10
+      }
+      refs['tableCmp'].loadingData(reqData)
+    }
     return{
       userForm,configOptions,configTable,
       disableSwitch,model,
-      searchContent,removeItem,editItem,addUser,getUserList,disableUser
+      searchContent,removeItem,editItem,addUser,getUserList,disableUser,searchUser
     }
   }
 }

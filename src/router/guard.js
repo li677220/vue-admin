@@ -1,3 +1,4 @@
+  
 import router from "./index";
 import { getToken } from "@/utils/app"
 
@@ -13,4 +14,3 @@ router.beforeEach((to, from, next) => {
     }
   }
 })
-

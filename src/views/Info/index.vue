@@ -82,8 +82,8 @@
       </el-col>
     </el-row>
     <!-- 新增弹窗 -->
-    <dialogInfo ref="addDialog" :category="options.item" title="新增"></dialogInfo>
-    <dialogInfo ref="editDialog" :category="options.item" title="编辑"></dialogInfo>
+    <dialogInfo ref="addDialog" @getList="getList" :category="options.item" title="新增"></dialogInfo>
+    <dialogInfo ref="editDialog" @getList="getList" :category="options.item" title="编辑"></dialogInfo>
   </div>
 </template>
 
@@ -172,7 +172,8 @@ export default {
         // })
         // 请求删除接口成功后 清空deleteIds
         deleteIds.id.splice(0,deleteIds.id.length)
-        console.log(resData);
+        // console.log(resData);
+        getList()
       }).catch(err => {
         console.log(err);
       })

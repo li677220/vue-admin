@@ -1,13 +1,13 @@
 <template>
 <div>
-  <el-table :data="data.tableData" border style="width: 100%" @selection-change="handleSelectionChange">
+  <el-table :data="data.tableData" border style="width: 100%" v-loading="config.load" @selection-change="handleSelectionChange">
     <el-table-column type="selection" width="55" v-if="data.configTable.selection"></el-table-column>
     <template v-for="(item,i) in data.configTable.tHead">
       <el-table-column :key="i" v-if="item.columnType === 'slot'" :prop="item.field" :label="item.label" :width="item.width">
         <template v-slot="scope">
           <slot :name="item.slotName" :data="scope.row"></slot>
         </template>
-      </el-table-column>  
+      </el-table-column> 
       <el-table-column :key="i" :prop="item.field" :label="item.label" :width="item.width" v-else></el-table-column>  
     </template>
   </el-table>
@@ -24,7 +24,7 @@
       :page-sizes="pageData.pageSizes"
       :page-size="pageData.pageSize"
       class="full-right"
-      layout="total, sizes, prev, pager, next, jumper"
+      layout="sizes, prev, pager, next, jumper"
       :total="pageData.total" background>
     </el-pagination>
   </div>
@@ -32,10 +32,11 @@
 </div>
 </template>
 <script>
-import { onMounted, reactive, watch, watchEffect } from '@vue/composition-api'
+import { onMounted, reactive, watch, watchEffect, computed } from '@vue/composition-api'
 import { loadData } from "./loadData"
 import { pagination } from "./pagination"
-import { DeleteUser } from "@/api/user.js"
+import { allRoles, allSystem } from "@/assets/role/role.js"
+import { DeleteUser, GetUserList } from "@/api/user.js"
 import { global } from "@/utils/globalv3.js"
 export default {
 props: {
@@ -45,39 +46,66 @@ props: {
   }
 },
 setup (props,context) {
-  const { tableData, loadingData } = loadData()
-  const { pageData, handleSizeChange, handleCurrentChange } = pagination()
+  // const { tableData } = loadData()
+  // const { pageData, handleSizeChange, handleCurrentChange } = pagination()
   const { removeTips } = global();
-  // 初始加载10条数据
-  
+  console.log(allRoles,allSystem);
+  const allCitys = reactive({})
   const data = reactive({
     tableData: [],
-    configTable: {
-      selection: true,
-      // requestUrl: "",
-      tHead: [],
-      pagination: true
-    }
+    // configTable: {
+    //   selection: true,
+    //   // requestUrl: "",
+    //   tHead: [],
+    //   pagination: true
+    // }
+    configTable: computed(() => {
+      return props.config
+    })
   })
   let selectData = reactive({
     // 选中数据的id
     item: []
   })
-  // 监听表格数据
-  watchEffect(() => {
-    // 更新页码
-    pageData.total = tableData.total
+  const pageData = reactive({
+    currentPage: 1,
+    pageSize: 10,
+    total: 0,
+    pageSizes: [10, 20, 30, 40]
   })
+  const handleSizeChange = val => {
+    pageData.pageSize = val
+    loadingData({
+      pageNumber: pageData.currentPage,
+      pageSize: pageData.pageSize
+    })
+  }
+  const handleCurrentChange = val => {
+    pageData.currentPage = val
+    loadingData({
+      pageNumber: pageData.currentPage,
+      pageSize: pageData.pageSize
+    })
+  }
+  // 监听表格数据 
+  // watchEffect(() => {
+  //   // 更新页码(后端返回的页码存在问题，暂时取消页码总计的显示)
+  //   pageData.total = tableData.total
+  // })
   //监听父组件传入的表头数据
-  watch([
-    () => props.config,
-    () => tableData.item
-    ], ([config,item]) => {
-      data.configTable = config //更新表头
-      data.tableData = item //更新数据
-    },{
-    immediate: true //初次加载时是否监听（绑定时加载）
-  })
+  // watch(() => tableData,(newVal,oldVal) => {
+  //   data.tableData = newVal.item
+  //   console.log(newVal.item,oldVal.item);
+  // },{
+  //   deep: true
+  // })
+  // watch(() => tableData.item , (newItem,oldItem) => {
+  //     data.tableData = newItem 
+  //     console.log(data);//(第二次变化监听不到,将分离出去的表格数据重新拿到当前页面（曲线救国）)
+  //   },{
+  //   // immediate: true, //初次加载时是否监听（绑定时加载）
+  //   deep: true
+  // })
   const batchRemove = () => {
     if(selectData.item.length == 0){
       context.root.$message({
@@ -101,7 +129,6 @@ setup (props,context) {
       id: removeIds 
     }
     DeleteUser(reqData).then(res => {
-      console.log("删除成功");
       getList()
     }).catch(err => {
       console.log(err);
@@ -111,17 +138,45 @@ setup (props,context) {
     selectData.item = val
   }
   const getList = () => {
-    loadingData({
+    let reqData = {
       pageNumber:1,
       pageSize:10
+    }
+    loadingData(reqData)
+    props.config.load = false
+  }
+  const loadingData = (params) => {
+    GetUserList(params).then(res => {
+      let resData = res.data.data
+      formatRole(resData.data)
+      // let resData = formatRole(res.data.data.data)
+      data.tableData = resData.data
+      // tableData.total = resData.data.length > 10 ? resData.total : resData.data.length
+      pageData.total = resData.total
+    }).catch(err => {
+      console.log(err);
     })
+  }
+  // 地区和时间默认以json格式显示，需要格式化
+  const formatAddress = () => {
+
+  }
+  const formatRole = (data) => {
+    for(let i in data){
+      let role = allRoles.filter(item => {
+        return item.role == data[i].role
+      })[0].name
+      data[i].role = role
+    }
   }
   onMounted(() => {
     getList()
   })
   return {
     data, pageData,
-    handleSizeChange, handleCurrentChange,batchRemove,handleSelectionChange,getList
+    // methods
+    handleSizeChange, handleCurrentChange,batchRemove,handleSelectionChange,
+    getList,loadingData
   }
 },
 }

@@ -52,10 +52,30 @@ export function DisableUser(data){
 /**
  * 获取角色
  */
-export function GetRole(data){
+export function GetRole(){
   return service.request({
     method: "POST",
     url: "/role/",
-    data
+    data: {}
+  })
+}
+/**
+ * 获取系统
+ */
+export function GetSystem(){
+  return service.request({
+    method: "POST",
+    url: "/system/",
+    data: {}
+  })
+}
+/**
+ * 获取用户角色
+ */
+export function GetUserRole(){
+  return service.request({
+    method: "POST",
+    url: "/userRole/",
+    data: {}
   })
 }

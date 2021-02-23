@@ -113,6 +113,7 @@ export default {
         context.root.$router.push({
           path: "/infoIndex",
         })
+      // 刷新列表
       }).catch(err => {
         console.log(err);
       })

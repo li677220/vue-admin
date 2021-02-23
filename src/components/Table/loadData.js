@@ -10,6 +10,7 @@ export function loadData(){
     GetUserList(params).then(res => {
       let resData = res.data.data
       tableData.item = resData.data
+      // tableData.total = resData.data.length > 10 ? resData.total : resData.data.length
       tableData.total = resData.total
     }).catch(err => {
       console.log(err);

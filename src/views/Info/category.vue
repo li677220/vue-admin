@@ -163,7 +163,9 @@ export default {
         parentId: cateForm.firstId
       }
       AddChildrenCategory(reqData).then(res => {
-        console.log(res);
+        // res.data.data
+        console.log(category.item);
+        console.log(category.current);
       }).catch(err => {
         console.log(err);
       })

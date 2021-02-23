@@ -27,7 +27,7 @@
             <el-radio v-model="addForm.status" label="2">启用</el-radio>
           </el-form-item>
           <el-form-item label="角色：" prop="role">
-            <el-checkbox-group v-model="addForm.role">
+            <el-checkbox-group v-model="addForm.role" :max="1">
               <el-checkbox v-for="(item,i) in checkboxList.item" :label="item.role" :key="i">{{item.name}}</el-checkbox>
             </el-checkbox-group>
           </el-form-item>
@@ -44,7 +44,7 @@
 import sha1 from "sha1"
 import { reactive, ref } from '@vue/composition-api'
 import CitySelect from "@/components/CitySelect/index.vue"
-import { GetRole, AddUser, EditUser } from "@/api/user.js"
+import { GetRole, AddUser, EditUser, GetSystem } from "@/api/user.js"
 import { validateEmail, validatePassword, validatePhone } from "@/utils/validate.js"
 export default {
 components: { CitySelect },
@@ -70,11 +70,19 @@ setup(props,context){
   })
   let dialogVisible = ref(false)
   const getRole = () => {
-    GetRole({}).then(res => {
+    // 获取角色
+    GetRole().then(res => {
       checkboxList.item = res.data.data
     }).catch(err => {
       console.log(err);
     })
+    // 获取系统
+    // GetSystem().then(res => {
+    //   checkboxList.item = res.data.data
+    //   console.log(checkboxList.item);
+    // }).catch(err => {
+    //   console.log(err);
+    // })
   }
   const dialogClose = () => {
     dialogVisible.value = false
@@ -95,6 +103,7 @@ setup(props,context){
     // addForm.password = sha1(addForm.password)
   }
   const resetAddform = () => {
+    // 使用elementui自带清空表单会存在bug(先点编辑再点新增 表单数据无法清空)
     addForm.username = ""
     addForm.truename = ""
     addForm.password = ""
@@ -102,7 +111,6 @@ setup(props,context){
     addForm.region = null
     addForm.status = "2"
     addForm.role = []
-    // 使用elementui自带清空表单会存在bug(先点编辑再点新增 表单数据无法清空)
     // context.refs["addForm"].resetFields();
     context.refs["citySelect"].resetCurrentData()
   }

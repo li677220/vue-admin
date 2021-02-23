@@ -90,7 +90,8 @@ export default {
         addForm.content = ''
         // context.refs[addForm].resetFields();
         dialogVisible.value = false
-        // context.root.$emit("getList")
+        context.emit('getList')
+        // console.log(context.root.$parent);
       }).catch(err => {
         console.log(err);
       })
@@ -111,6 +112,7 @@ export default {
         addForm.title = '',
         addForm.content = ''
         dialogVisible.value = false
+        context.emit('getList')
       }).catch(err => {
         console.log(err);
       })

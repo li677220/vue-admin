@@ -47,6 +47,7 @@ const routes = [
         path: "/infoIndex",
         name: "InfoIndex",
         meta: {
+          keepAlive: true,
           name: "信息管理"
         },
         component: () => import("../views/Info")
@@ -55,6 +56,7 @@ const routes = [
         path: "/category",
         name: "Category",
         meta: {
+          keepAlive: true,
           name: "信息分类"
         },
         component: () => import("../views/Info/category.vue")
@@ -84,11 +86,20 @@ const routes = [
         path: "/userIndex",
         name: "UserIndex",
         meta: {
+          keepAlive: true,
           name: "用户列表"
         },
         component: () => import("../views/User")
       }
     ]
+  },
+  {
+    path: "/page404",
+    component: () => import("../views/404.vue")
+  },
+  {
+    path: "*",
+    redirect: "/page404"
   }
   
 ];

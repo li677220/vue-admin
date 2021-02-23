@@ -3,6 +3,7 @@ const state = {
   isCollapse: JSON.parse(sessionStorage.getItem("isClose")) || false,
   // toKen: "",
   // userName: getUserName("username") || ""
+  
 }
 const mutations = {
   switchIsCollapse(state) {
@@ -11,10 +12,10 @@ const mutations = {
   },
 }
 const actions = {
-  signOut(state){
+  signOut(context){
     removeToken("admin-token")
     removeToken("username")
-    state.commit("user/removeState","",{root: true})
+    context.commit("user/removeState","",{root: true})
   }
 }
 export default {

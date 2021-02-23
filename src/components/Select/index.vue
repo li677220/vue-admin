@@ -1,5 +1,5 @@
 <template>
-  <el-select v-model="options.selectValue" placeholder="请选择" style="width: 130px">
+  <el-select v-model="options.selectValue" placeholder="请选择" style="width: 130px" @change="changeSelect">
     <el-option
       v-for="item in options.initOptions"
       :key="item.value"
@@ -22,14 +22,17 @@ setup(props,context){
   const options = reactive({
     selectValue: "",
     item: [
-      {value: "name", lable: "姓名"},
+      {value: "truename", lable: "姓名"},// (接口有误，无法根据真实姓名搜索数据)
       {value: "phone", lable: "手机号"},
-      {value: "email", lable: "邮箱"},
+      {value: "username", lable: "邮箱"},
       {value: "id", lable: "ID"},
       {value: "title", lable: "标题"},
     ],
     initOptions: []
   })
+  const currentData = {
+    key: "phone"
+  }
   // 初始化下拉框
   const initSelect = () => {
     // 不能直接在循环中修改options.item,每一次修改都会渲染一次页面
@@ -42,11 +45,14 @@ setup(props,context){
     options.initOptions = optionArr
     options.selectValue = options.initOptions[0].value
   }
+  const changeSelect = val => currentData.key = val
+  const getCurrentSelect = () => currentData
   onMounted(() => {
     initSelect()
   })
   return{
-    options
+    options, currentData,
+    changeSelect, getCurrentSelect
   }
 }
 }
