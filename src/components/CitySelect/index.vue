@@ -71,7 +71,6 @@ setup(props,context){
     GetCity({type: "province"}).then(res => {
       let resData = res.data.data.data
       data.province = resData
-      console.log(resData);
     }).catch(err => {
       console.log(err);
     })

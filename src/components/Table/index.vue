@@ -36,6 +36,7 @@ import { onMounted, reactive, watch, watchEffect, computed } from '@vue/composit
 import { loadData } from "./loadData"
 import { pagination } from "./pagination"
 import { allRoles, allSystem } from "@/assets/role/role.js"
+import { allAddress } from "@/assets/address/city.js"
 import { DeleteUser, GetUserList } from "@/api/user.js"
 import { global } from "@/utils/globalv3.js"
 export default {
@@ -50,7 +51,6 @@ setup (props,context) {
   // const { pageData, handleSizeChange, handleCurrentChange } = pagination()
   const { removeTips } = global();
   console.log(allRoles,allSystem);
-  const allCitys = reactive({})
   const data = reactive({
     tableData: [],
     // configTable: {
@@ -149,6 +149,7 @@ setup (props,context) {
     GetUserList(params).then(res => {
       let resData = res.data.data
       formatRole(resData.data)
+      formatAddress(resData.data)
       // let resData = formatRole(res.data.data.data)
       data.tableData = resData.data
       // tableData.total = resData.data.length > 10 ? resData.total : resData.data.length
@@ -158,8 +159,36 @@ setup (props,context) {
     })
   }
   // 地区和时间默认以json格式显示，需要格式化
-  const formatAddress = () => {
+  const formatAddress = (data) => {
+    for(let i in data){
+      // console.log(typeof(JSON.parse(data[i].region)));
+      data[i].region = JSON.parse(data[i].region)
+      // console.log(data[i].region);
+      let resoult = ""
+      allAddress.filter(item => {
+        if(item.PROVINCE_CODE == data[i].region.province){
+          resoult = item.PROVINCE_NAME
+          item.children.filter(item => {
+            if(resoult == item.CITY_NAME){
+              resoult += ""
+              // break
+              return
+            }
+            if(item.CITY_CODE == data[i].region.city){
+              resoult += "-"+item.CITY_NAME
+            }
+          })
 
+        }
+      })
+      // let province = allAddress.filter(item => {
+      //   return item.PROVINCE_CODE == data[i].region.province
+      // })
+      // let city = province.children.filter(item => {
+      //   return item.CITY_CODE == data[i].region.city
+      // })
+      data[i].region = resoult
+    }
   }
   const formatRole = (data) => {
     for(let i in data){
