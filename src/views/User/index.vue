@@ -33,7 +33,7 @@
       </template>
       <template v-slot:handle="slotData">
         <el-button size="mini" type="danger" @click="removeItem(slotData.data)">删除</el-button>
-        <el-button size="mini" type="success" @click="editItem(slotData.data)">操作</el-button>
+        <el-button size="mini" type="success" @click="editItem(slotData.data.id)">操作</el-button>
       </template>
       <!-- <template v-slot:batchRemove="slotData">
         <el-button size="small" @click="removeItem(slotData.data)">批量删除</el-button>
@@ -44,7 +44,7 @@
 </template>
 
 <script>
-import { reactive, ref } from '@vue/composition-api'
+import { reactive, ref, provide, watch, onMounted } from '@vue/composition-api'
 import SelectCmp from "@/components/Select/index.vue"
 import TableCmp from "@/components/Table/index.vue"
 import { DeleteUser, DisableUser, GetUserList } from "@/api/user.js" 
@@ -88,13 +88,16 @@ export default {
         width: "120",
         columnType: "slot",
         slotName: "status"
-      }, {
-        label: "操作",
-        field: "handle",
-        width: "180",
-        columnType: "slot",
-        slotName: "handle"
-      }],
+      }, 
+      // 操作界面重写中
+      // {
+      //   label: "操作",
+      //   field: "handle",
+      //   width: "180",
+      //   columnType: "slot",
+      //   slotName: "handle"
+      // }
+      ],
       // requestUrl: "/user/getList/",
       //是否需要显示页码,默认为true
       pagination: true,
@@ -135,9 +138,11 @@ export default {
         }
       }) 
     }
-    const editItem = (params) => {
+    const editItem = (id) => {
       model.type = "edit"
-      refs.addUserDialog.receiveEditData(params)
+      // 角色和地址应该转换各自之后再传递过去
+      // 否则会引起重大bug
+      refs.addUserDialog.receiveEditData(id)
       refs.addUserDialog.openDialog()
     }
     const addUser = () => {
@@ -150,7 +155,7 @@ export default {
         status: params.status
       }
       DisableUser(reqData).then(res => {
-        console.log(res);
+        // console.log(res);
       }).catch(err => {
         console.log(err);
       })
@@ -173,7 +178,7 @@ export default {
       disableSwitch,model,
       searchContent,removeItem,editItem,addUser,getUserList,disableUser,searchUser
     }
-  }
+  },
 }
 </script>
 

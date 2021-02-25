@@ -42,7 +42,7 @@
 
 <script>
 import sha1 from "sha1"
-import { reactive, ref } from '@vue/composition-api'
+import { reactive, ref, provide, onMounted } from '@vue/composition-api'
 import CitySelect from "@/components/CitySelect/index.vue"
 import { GetRole, AddUser, EditUser, GetSystem } from "@/api/user.js"
 import { validateEmail, validatePassword, validatePhone } from "@/utils/validate.js"
@@ -54,17 +54,17 @@ props:{
     default: () => {}
   }
 },
-setup(props,context){
+setup(props,{ emit, root, refs }){
     const addForm = reactive({
-    username: '',
-    truename: '',
-    password: '',
-    phone: '',
-    region: null,
-    status: '2',
-    role: [],
-    btnPerm: ''
-  })
+      username: '5431452@qq.com',
+      truename: '刘浪',
+      password: 'lj123456',
+      phone: '13660345864',
+      region: null,
+      status: '2',
+      role: [],
+      btnPerm: ''
+    })
   const checkboxList = reactive({
     item: []
   })
@@ -86,6 +86,8 @@ setup(props,context){
   }
   const dialogClose = () => {
     dialogVisible.value = false
+    // 弹窗关闭时，清空vuex中所选数据的id
+    root.$store.commit('app/setEditId',"")
     resetAddform()
   }
   const openDialog = () => {
@@ -95,10 +97,12 @@ setup(props,context){
   }
   // 提交表单前 将表单数据格式化为所需的格式
   const formatAddform = () => {
-    addForm.region = JSON.stringify(context.refs['citySelect'].getAddress())
+    addForm.region = JSON.stringify(refs['citySelect'].getAddress())
     let reqData = JSON.parse(JSON.stringify(addForm))
     reqData.role = reqData.role.toString()
     reqData.password = sha1(reqData.password)
+    // console.log(reqData);
+    // return false
     return reqData
     // addForm.password = sha1(addForm.password)
   }
@@ -112,7 +116,7 @@ setup(props,context){
     addForm.status = "2"
     addForm.role = []
     // context.refs["addForm"].resetFields();
-    context.refs["citySelect"].resetCurrentData()
+    refs["citySelect"].resetCurrentData()
   }
   const validateAddform = () => {
     let flag = validatePhone(addForm.phone) && validateEmail(addForm.username) && addForm.role.length != 0
@@ -125,7 +129,7 @@ setup(props,context){
   const confirmHandle = () => {
     // 验证表单数据
     if(!validateAddform()){
-      context.root.$message({
+      root.$message({
         message: "填入信息有误，请核对",
         type: "error"
       })
@@ -152,32 +156,40 @@ setup(props,context){
       dialogVisible.value = false
       // 用户添加成功 清空表单 刷新数据
       resetAddform()
-      context.emit("getUserList")
+      emit("getUserList")
     }).catch(err => {
       console.log(err);
     })
   }
   const editUser = () => {
     let reqData = formatAddform()
-    console.log(reqData);
+    // console.log(reqData);
     EditUser(reqData).then(res => {
-      console.log(reqData);
+      // console.log(reqData);
+      // return false
       dialogVisible.value = false
       // 用户修改成功 清空表单 刷新数据
       resetAddform()
-      context.emit("getUserList")
+      emit("getUserList")
     }).catch(err => {
       console.log(err);
     })
   }
   // 接收父组件传递过来的待编辑的对象
-  const receiveEditData = (val) => {
+  // 更新：父组件仅传递待编辑对象的id
+  const receiveEditData = (id) => {
+    let rawData = root.$store.getters['app/rawData']
+    root.$store.commit('app/setEditId',id)
+    let val = rawData.filter(item => {
+      return item.id == id
+    })[0]
+    // console.log(id);
+    // console.log(val);
     for(let item in val){
       addForm[item] = val[item]
     }
-    // 角色显示为Array形式，传递为String形式
-    addForm.role = addForm.role.split(',');
-    // console.log(addForm.role);
+    // 一个用户多个角色（已取消）
+    // addForm.role = addForm.role.split(',');
   }
   return{
     addForm,checkboxList,

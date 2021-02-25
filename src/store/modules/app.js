@@ -3,13 +3,29 @@ const state = {
   isCollapse: JSON.parse(sessionStorage.getItem("isClose")) || false,
   // toKen: "",
   // userName: getUserName("username") || ""
-  
+  rawData: [],
+  editId: ""
 }
+const getters = {
+  rawData(state) {
+    return state.rawData
+  },
+  editId(state) {
+    return state.editId
+  }
+}
+
 const mutations = {
   switchIsCollapse(state) {
     state.isCollapse = !state.isCollapse
     sessionStorage.setItem("isClose", state.isCollapse)
   },
+  setRawData(state,params){
+    state.rawData = params
+  },
+  setEditId(state,val){
+    state.editId = val
+  }
 }
 const actions = {
   signOut(context){
@@ -21,6 +37,7 @@ const actions = {
 export default {
   namespaced: true,
   state,
+  getters,
   mutations,
   actions
 }

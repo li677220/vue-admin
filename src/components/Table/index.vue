@@ -44,13 +44,19 @@ props: {
   config: {
     type: Object,
     default: () => {}
-  }
+  },
+  // rawData: {
+  //   type: Array,
+  //   default: () => []
+  // }
 },
 setup (props,context) {
   // const { tableData } = loadData()
   // const { pageData, handleSizeChange, handleCurrentChange } = pagination()
   const { removeTips } = global();
-  console.log(allRoles,allSystem);
+  // console.log(allRoles,allSystem);
+  // 请求到的未经格式化的原始数据
+  // let rawData = reactive({})
   const data = reactive({
     tableData: [],
     // configTable: {
@@ -148,10 +154,14 @@ setup (props,context) {
   const loadingData = (params) => {
     GetUserList(params).then(res => {
       let resData = res.data.data
+      let rawData = JSON.parse(JSON.stringify(resData.data))
+      context.root.$store.commit("app/setRawData",rawData)
+      // console.log(context.root.$store.state.app.rawData);
       formatRole(resData.data)
       formatAddress(resData.data)
       // let resData = formatRole(res.data.data.data)
       data.tableData = resData.data
+      // console.log(data.tableData);
       // tableData.total = resData.data.length > 10 ? resData.total : resData.data.length
       pageData.total = resData.total
     }).catch(err => {
@@ -160,7 +170,11 @@ setup (props,context) {
   }
   // 地区和时间默认以json格式显示，需要格式化
   const formatAddress = (data) => {
+    
     for(let i in data){
+      if(!data[i].region){
+      return ""
+    }
       // console.log(typeof(JSON.parse(data[i].region)));
       data[i].region = JSON.parse(data[i].region)
       // console.log(data[i].region);
@@ -191,6 +205,7 @@ setup (props,context) {
     }
   }
   const formatRole = (data) => {
+    // console.log(data);
     for(let i in data){
       let role = allRoles.filter(item => {
         return item.role == data[i].role

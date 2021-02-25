@@ -10,7 +10,7 @@
             <!-- 一级分类 -->
             <h4>
               <svg-icon iconClass="plus" className="plus"></svg-icon>
-              <span>{{item.category_name}}{{item.id}}</span>
+              <span>{{item.category_name}}</span>
               <div class="btn-group">
                 <el-button size="mini" type="danger" round @click="editCategory({data: item, type: 'category_first_edit'})">编辑</el-button>
                 <el-button size="mini" type="success" round @click="addSecondCate({data: item, type: 'category_second_add'})">添加子级</el-button>
@@ -164,8 +164,11 @@ export default {
       }
       AddChildrenCategory(reqData).then(res => {
         // res.data.data
-        console.log(category.item);
-        console.log(category.current);
+        getInfoCategoryAll()
+        // 清空表格
+        cateForm.second = ""
+        // console.log(category.item);
+        // console.log(category.current);
       }).catch(err => {
         console.log(err);
       })
@@ -229,14 +232,14 @@ export default {
       inputStatus.second = true
       inputStatus.secondInputDis = false
       cateForm.firstId = item.data.id
-      console.log(item);
+      // console.log(item);
     }
     const hasFocus = () => {
       confirmBtnStatus.disable = false
     }
     onMounted(() => {
       getInfoCategoryAll()
-      console.log(categoryInfo);
+      // console.log(categoryInfo);
     })
     watch(() => categoryInfo.item,(value) => {
       category.item = value

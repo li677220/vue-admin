@@ -13,26 +13,26 @@ const routes = [
     name: "Login",
     component: () => import("../views/Login")
   },
-  {
-    path: "/console",
-    name: "Console",
-    meta: {
-      name: "控制台",
-      icon: "console"
-    },
-    redirect: "Index",
-    component: () => import("../views/Layout"),
-    children: [
-      {
-        path: "/index",
-        name: "Index",
-        meta: {
-          name: "首页"
-        },
-        component: () => import("../views/Console")
-      }
-    ]
-  },
+  // {
+  //   path: "/console",
+  //   name: "Console",
+  //   meta: {
+  //     name: "控制台",
+  //     icon: "console"
+  //   },
+  //   redirect: "Index",
+  //   component: () => import("../views/Layout"),
+  //   children: [
+  //     {
+  //       path: "/index",
+  //       name: "Index",
+  //       meta: {
+  //         name: "首页"
+  //       },
+  //       component: () => import("../views/Console")
+  //     }
+  //   ]
+  // },
   {
     path: "/info",
     name: "info",
@@ -40,7 +40,7 @@ const routes = [
       name: "信息管理",
       icon: "message"
     },
-    // redirect: "InfoIndex",
+    redirect: "InfoIndex",
     component: () => import("../views/Layout"),
     children: [
       {
@@ -86,7 +86,7 @@ const routes = [
         path: "/userIndex",
         name: "UserIndex",
         meta: {
-          keepAlive: true,
+          keepAlive: false,
           name: "用户列表"
         },
         component: () => import("../views/User")

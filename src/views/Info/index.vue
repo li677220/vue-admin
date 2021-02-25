@@ -57,7 +57,7 @@
       <el-table-column prop="title" label="标题" ></el-table-column>
       <el-table-column prop="categoryName" label="类型" width="130"></el-table-column>
       <el-table-column prop="createDate" label="日期" width="240" :formatter="formatTime"></el-table-column>
-      <el-table-column prop="manager" label="管理人" width="115"></el-table-column>
+      <!-- <el-table-column prop="manager" label="管理人" width="115"></el-table-column> -->
       <el-table-column prop="operation" label="操作" width="240">
         <template v-slot="scope">
           <el-button type="danger" size="mini" @click="deleteInfo(scope.row.id)">删除</el-button>

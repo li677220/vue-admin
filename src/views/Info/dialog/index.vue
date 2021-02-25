@@ -68,7 +68,7 @@ export default {
       props.category.forEach(item => {
         if(item.id == val){
           currentItem = item
-          console.log(item);
+          // console.log(item);
         }
       })
     }

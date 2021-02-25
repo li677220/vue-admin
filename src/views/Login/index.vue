@@ -64,7 +64,7 @@
         </el-form-item>
         <el-form-item>
           <el-button 
-          type="primary" class="login-btn" @click="submitForm(model)" :disabled="loginBtn.status" :loading="loginBtn.loading">{{model === "login" ? "登录" : "注册并登录"}}</el-button>
+          type="primary" class="login-btn" @click="submitForm(model)" :disabled="loginBtn.status" :loading="loginBtn.loading">{{model === "login" ? "登录" : "注册"}}</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -125,8 +125,8 @@ export default {
       { name: "注册", current: false,type: "register" },
     ]);
     const ruleForm = reactive({
-      username: "li888@163.com",
-      password: "LJ18582266536",
+      username: "li666@163.com",
+      password: "lj123456",
       repassword: "",
       code: "",
     });
@@ -177,7 +177,7 @@ export default {
         root.$store.dispatch("login/login",data).then((res) => {
           loginBtn.loading = false
           root.$router.push({
-            name: "Console"
+            name: "info"
           })
         })
 
@@ -207,7 +207,7 @@ export default {
       }else if(model == "register"){
         Register(data).then(response => {
           loginBtn.loading = false
-          console.log(response);
+          // console.log(response);
         }).catch(error => {
           loginBtn.loading = false
           console.log(error);

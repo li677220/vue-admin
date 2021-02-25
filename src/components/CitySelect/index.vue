@@ -47,7 +47,7 @@
 
 <script>
 import { GetCity } from "@/api/common.js"
-import { onMounted, reactive } from '@vue/composition-api'
+import { onMounted, reactive, onActivated } from '@vue/composition-api'
 export default {
 setup(props,context){
   const data = reactive({
@@ -56,18 +56,23 @@ setup(props,context){
     area: [],
     street: []
   })
+  const regionData = reactive({})
   const currentData = reactive({
     province: "",
     city: "",
     area: "",
     street: ""
   })
+  // const editRegionData = (params) => {
+  //   console.log(params);
+  // }
   const resetCurrentData = () => {
     for(var item in currentData){
       currentData[item] = ""
     }
   }
   const getProvince = () => {
+    // console.log(regionData);
     GetCity({type: "province"}).then(res => {
       let resData = res.data.data.data
       data.province = resData
@@ -86,7 +91,7 @@ setup(props,context){
     }).then(res => {
       let resData = res.data.data.data
       data.city = resData
-      console.log(resData);
+      // console.log(resData);
     }).catch(err => {
       console.log(err);
     })
@@ -101,7 +106,7 @@ setup(props,context){
     }).then(res => {
       let resData = res.data.data.data
       data.area = resData
-      console.log(resData);
+      // console.log(resData);
     }).catch(err => {
       console.log(err);
     })
@@ -115,18 +120,26 @@ setup(props,context){
     }).then(res => {
       let resData = res.data.data.data
       data.street = resData
-      console.log(resData);
+      // console.log(resData);
     }).catch(err => {
       console.log(err);
     })
   }
   const getAddress = () => currentData
   onMounted(() => {
-    getProvince()
+    // if(context.root.$store.getters['app/editId'] == ""){
+      getProvince()
+    // }else{
+    //   let data = context.root.$store.getters['app/rawData'].filter(item => item.id == context.root.$store.getters['app/editId'])[0]
+    //   // for(let i in data){
+    //     console.log(data.region);
+    //   // }
+    // }
+    // console.log(context.root.$store.getters['app/editId']);
   })
   return{
-    data,currentData,
-    getProvince,changePro,changeCity,changeArea,getAddress,resetCurrentData
+    data,currentData,regionData,
+    getProvince,changePro,changeCity,changeArea,getAddress,resetCurrentData,editRegionData
   }
 }
 }
